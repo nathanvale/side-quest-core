@@ -167,8 +167,8 @@ jobs:
           TAG="v${VERSION}"
           echo "Creating GitHub release for ${TAG}"
           # Create and push the tag (Changesets doesn't create tags)
-          git tag "${TAG}"
-          git push origin "${TAG}"
+          git tag "${TAG}" 2>/dev/null || echo "Tag ${TAG} already exists"
+          git push origin "${TAG}" 2>/dev/null || echo "Tag ${TAG} already pushed"
           # Create the release
           gh release create "${TAG}" \
             --title "${TAG}" \
