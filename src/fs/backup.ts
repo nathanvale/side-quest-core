@@ -8,8 +8,8 @@
  * @module fs/backup
  */
 
-import { readFile, writeFile } from "node:fs/promises";
-import { writeTextFileAtomic } from "./index.js";
+import { readFile, writeFile } from 'node:fs/promises'
+import { writeTextFileAtomic } from './index.js'
 
 /**
  * Create a backup copy of a file before modifying it.
@@ -36,10 +36,10 @@ import { writeTextFileAtomic } from "./index.js";
  * ```
  */
 export async function createBackup(filePath: string): Promise<string> {
-	const backupPath = `${filePath}.backup`;
-	const content = await readFile(filePath, "utf-8");
-	await writeTextFileAtomic(backupPath, content);
-	return backupPath;
+	const backupPath = `${filePath}.backup`
+	const content = await readFile(filePath, 'utf-8')
+	await writeTextFileAtomic(backupPath, content)
+	return backupPath
 }
 
 /**
@@ -57,9 +57,9 @@ export async function createBackup(filePath: string): Promise<string> {
  * ```
  */
 export async function restoreFromBackup(filePath: string): Promise<void> {
-	const backupPath = `${filePath}.backup`;
-	const content = await readFile(backupPath, "utf-8");
-	await writeTextFileAtomic(filePath, content);
+	const backupPath = `${filePath}.backup`
+	const content = await readFile(backupPath, 'utf-8')
+	await writeTextFileAtomic(filePath, content)
 }
 
 /**
@@ -90,21 +90,21 @@ export async function restoreFromBackup(filePath: string): Promise<void> {
 export async function safeReadJSON<T>(filePath: string): Promise<T> {
 	try {
 		// Try to read and parse main file
-		const content = await readFile(filePath, "utf-8");
-		return JSON.parse(content) as T;
+		const content = await readFile(filePath, 'utf-8')
+		return JSON.parse(content) as T
 	} catch (error) {
 		// Try backup if main file corrupted
-		const backupPath = `${filePath}.backup`;
-		const backup = await readFile(backupPath, "utf-8").catch(() => null);
+		const backupPath = `${filePath}.backup`
+		const backup = await readFile(backupPath, 'utf-8').catch(() => null)
 
 		if (backup) {
 			// Restore from backup and return parsed data
-			console.warn(`Restored ${filePath} from backup`);
-			await writeFile(filePath, backup, "utf-8");
-			return JSON.parse(backup) as T;
+			console.warn(`Restored ${filePath} from backup`)
+			await writeFile(filePath, backup, 'utf-8')
+			return JSON.parse(backup) as T
 		}
 
 		// Both main and backup failed
-		throw error;
+		throw error
 	}
 }

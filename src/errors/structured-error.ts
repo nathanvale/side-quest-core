@@ -17,14 +17,14 @@
  * These categories are intentionally generic to support any domain.
  */
 export type ErrorCategory =
-	| "NETWORK_ERROR" // Network/connectivity issues
-	| "TIMEOUT" // Operation exceeded time limit
-	| "NOT_FOUND" // Resource doesn't exist
-	| "VALIDATION" // Data validation failure
-	| "PERMISSION" // Access denied/insufficient permissions
-	| "CONFIGURATION" // Invalid configuration
-	| "INTERNAL" // Internal/unexpected error
-	| "UNKNOWN"; // Uncategorized error
+	| 'NETWORK_ERROR' // Network/connectivity issues
+	| 'TIMEOUT' // Operation exceeded time limit
+	| 'NOT_FOUND' // Resource doesn't exist
+	| 'VALIDATION' // Data validation failure
+	| 'PERMISSION' // Access denied/insufficient permissions
+	| 'CONFIGURATION' // Invalid configuration
+	| 'INTERNAL' // Internal/unexpected error
+	| 'UNKNOWN' // Uncategorized error
 
 /**
  * Structured error with categorization, recoverability, and context.
@@ -51,27 +51,27 @@ export class StructuredError extends Error {
 	/**
 	 * High-level error category for classification.
 	 */
-	public readonly category: ErrorCategory;
+	public readonly category: ErrorCategory
 
 	/**
 	 * Machine-readable error code (e.g., "FILE_NOT_FOUND", "PARSE_FAILED").
 	 */
-	public readonly code: string;
+	public readonly code: string
 
 	/**
 	 * Whether this error is recoverable (can be retried).
 	 */
-	public readonly recoverable: boolean;
+	public readonly recoverable: boolean
 
 	/**
 	 * Arbitrary context metadata for debugging.
 	 */
-	public readonly context: Record<string, unknown>;
+	public readonly context: Record<string, unknown>
 
 	/**
 	 * Original error that caused this error (for error chaining).
 	 */
-	public override readonly cause?: Error;
+	public override readonly cause?: Error
 
 	constructor(
 		message: string,
@@ -81,17 +81,17 @@ export class StructuredError extends Error {
 		context: Record<string, unknown> = {},
 		cause?: Error,
 	) {
-		super(message);
-		this.name = "StructuredError";
-		this.category = category;
-		this.code = code;
-		this.recoverable = recoverable;
-		this.context = context;
-		this.cause = cause;
+		super(message)
+		this.name = 'StructuredError'
+		this.category = category
+		this.code = code
+		this.recoverable = recoverable
+		this.context = context
+		this.cause = cause
 
 		// Capture stack trace for V8 engines
 		if (Error.captureStackTrace) {
-			Error.captureStackTrace(this, StructuredError);
+			Error.captureStackTrace(this, StructuredError)
 		}
 	}
 
@@ -101,18 +101,18 @@ export class StructuredError extends Error {
 	 * @returns Plain object with all error properties
 	 */
 	toJSON(): {
-		name: string;
-		message: string;
-		category: ErrorCategory;
-		code: string;
-		recoverable: boolean;
-		context: Record<string, unknown>;
-		stack?: string;
+		name: string
+		message: string
+		category: ErrorCategory
+		code: string
+		recoverable: boolean
+		context: Record<string, unknown>
+		stack?: string
 		cause?: {
-			name: string;
-			message: string;
-			stack?: string;
-		};
+			name: string
+			message: string
+			stack?: string
+		}
 	} {
 		return {
 			name: this.name,
@@ -129,7 +129,7 @@ export class StructuredError extends Error {
 						stack: this.cause.stack,
 					}
 				: undefined,
-		};
+		}
 	}
 }
 
@@ -140,7 +140,7 @@ export class StructuredError extends Error {
  * @returns True if error is a StructuredError instance
  */
 export function isStructuredError(error: unknown): error is StructuredError {
-	return error instanceof StructuredError;
+	return error instanceof StructuredError
 }
 
 /**
@@ -150,5 +150,5 @@ export function isStructuredError(error: unknown): error is StructuredError {
  * @returns True if error is a StructuredError and is marked recoverable
  */
 export function isRecoverableError(error: unknown): boolean {
-	return isStructuredError(error) && error.recoverable;
+	return isStructuredError(error) && error.recoverable
 }

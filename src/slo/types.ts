@@ -7,29 +7,29 @@
 /**
  * SLO metric unit type
  */
-export type SLOUnit = "ms" | "percent" | "count";
+export type SLOUnit = 'ms' | 'percent' | 'count'
 
 /**
  * SLO time window for evaluation
  */
-export type SLOWindow = "1h" | "24h" | "7d" | "30d";
+export type SLOWindow = '1h' | '24h' | '7d' | '30d'
 
 /**
  * Service Level Objective definition with error budget
  */
 export interface SLODefinition {
 	/** Name of the SLO */
-	name: string;
+	name: string
 	/** Target percentage (0-1), e.g., 0.95 for 95% */
-	target: number;
+	target: number
 	/** Threshold value for the metric */
-	threshold: number;
+	threshold: number
 	/** Unit of the threshold (ms, percent, count) */
-	unit: SLOUnit;
+	unit: SLOUnit
 	/** Window for evaluation */
-	window: SLOWindow;
+	window: SLOWindow
 	/** Error budget (1 - target) */
-	errorBudget: number;
+	errorBudget: number
 }
 
 /**
@@ -37,15 +37,15 @@ export interface SLODefinition {
  */
 export interface SLOEvent {
 	/** Unix timestamp in milliseconds */
-	timestamp: number;
+	timestamp: number
 	/** Whether the SLO was violated */
-	violated: boolean;
+	violated: boolean
 	/** Name of the SLO */
-	sloName: string;
+	sloName: string
 	/** Actual value measured */
-	value: number;
+	value: number
 	/** SLO threshold */
-	threshold: number;
+	threshold: number
 }
 
 /**
@@ -53,13 +53,13 @@ export interface SLOEvent {
  */
 export interface SLOBreachResult {
 	/** Whether the SLO is breached */
-	breached: boolean;
+	breached: boolean
 	/** Burn rate (1 = fully consuming error budget) */
-	burnRate: number;
+	burnRate: number
 	/** Current value of the metric */
-	currentValue: number;
+	currentValue: number
 	/** SLO definition that was checked */
-	slo: SLODefinition;
+	slo: SLODefinition
 }
 
 /**
@@ -67,21 +67,21 @@ export interface SLOBreachResult {
  */
 export interface SLOTrackerConfig {
 	/** SLO definitions to track */
-	definitions: Record<string, SLODefinition>;
+	definitions: Record<string, SLODefinition>
 	/** Path to persistence file (JSONL format) */
-	persistencePath?: string;
+	persistencePath?: string
 	/** Max file size before rotation (default: 10MB) */
-	maxFileSizeBytes?: number;
+	maxFileSizeBytes?: number
 	/** Max age in days for events (default: 90) */
-	maxAgeDays?: number;
+	maxAgeDays?: number
 	/** Optional logger for debugging */
-	logger?: SLOLogger;
+	logger?: SLOLogger
 }
 
 /**
  * Optional logger interface for SLO operations
  */
 export interface SLOLogger {
-	info(message: string, context?: Record<string, unknown>): void;
-	error(message: string, context?: Record<string, unknown>): void;
+	info(message: string, context?: Record<string, unknown>): void
+	error(message: string, context?: Record<string, unknown>): void
 }

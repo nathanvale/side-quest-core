@@ -7,7 +7,7 @@
  * @module validation/identifiers
  */
 
-import { basename, normalize } from "node:path";
+import { basename, normalize } from 'node:path'
 
 /**
  * Validate classifier ID (kebab-case, no path traversal).
@@ -29,24 +29,24 @@ import { basename, normalize } from "node:path";
  */
 export function validateClassifierId(id: string): string {
 	// Prevent path traversal - check before normalization
-	if (id.includes("..") || id.includes("/") || id.includes("\\")) {
-		throw new Error(`Path traversal not allowed in classifier ID: ${id}`);
+	if (id.includes('..') || id.includes('/') || id.includes('\\')) {
+		throw new Error(`Path traversal not allowed in classifier ID: ${id}`)
 	}
 
-	const clean = basename(normalize(id));
+	const clean = basename(normalize(id))
 
 	// Prevent reserved names (check before kebab-case validation)
-	const reserved = ["index", "types", "defaults", "_template"];
+	const reserved = ['index', 'types', 'defaults', '_template']
 	if (reserved.includes(clean)) {
-		throw new Error(`Reserved classifier ID: ${clean}`);
+		throw new Error(`Reserved classifier ID: ${clean}`)
 	}
 
 	// Validate kebab-case
 	if (!/^[a-z][a-z0-9-]*$/.test(clean)) {
-		throw new Error(`Invalid classifier ID: must be kebab-case (got: ${id})`);
+		throw new Error(`Invalid classifier ID: must be kebab-case (got: ${id})`)
 	}
 
-	return clean;
+	return clean
 }
 
 /**
@@ -71,9 +71,9 @@ export function validateClassifierId(id: string): string {
 export function validateFieldName(name: string): string {
 	// Must start with lowercase letter, then letters/numbers only
 	if (!/^[a-z][a-zA-Z0-9]*$/.test(name)) {
-		throw new Error(`Invalid field name: must be camelCase (got: ${name})`);
+		throw new Error(`Invalid field name: must be camelCase (got: ${name})`)
 	}
-	return name;
+	return name
 }
 
 /**
@@ -97,16 +97,16 @@ export function validateFieldName(name: string): string {
  */
 export function validateTemplateName(name: string): string {
 	// Prevent path traversal - check before normalization
-	if (name.includes("..") || name.includes("/") || name.includes("\\")) {
-		throw new Error(`Path traversal not allowed in template name: ${name}`);
+	if (name.includes('..') || name.includes('/') || name.includes('\\')) {
+		throw new Error(`Path traversal not allowed in template name: ${name}`)
 	}
 
-	const clean = basename(normalize(name));
+	const clean = basename(normalize(name))
 
 	// Validate kebab-case
 	if (!/^[a-z][a-z0-9-]*$/.test(clean)) {
-		throw new Error(`Invalid template name: must be kebab-case (got: ${name})`);
+		throw new Error(`Invalid template name: must be kebab-case (got: ${name})`)
 	}
 
-	return clean;
+	return clean
 }

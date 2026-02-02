@@ -13,11 +13,11 @@
  */
 export interface ValidationResult<T = string> {
 	/** Whether validation passed */
-	valid: boolean;
+	valid: boolean
 	/** Validated value (only present if valid) */
-	value?: T;
+	value?: T
 	/** Error message (only present if invalid) */
-	error?: string;
+	error?: string
 }
 
 // ============================================================================
@@ -28,7 +28,7 @@ export interface ValidationResult<T = string> {
  * Characters that are valid in glob patterns.
  * Restricts to safe subset to prevent injection.
  */
-const SAFE_GLOB_CHARS = /^[a-zA-Z0-9_\-.*?[\]{}/\\,!]+$/;
+const SAFE_GLOB_CHARS = /^[a-zA-Z0-9_\-.*?[\]{}/\\,!]+$/
 
 /**
  * Check if a glob pattern is safe.
@@ -51,30 +51,30 @@ const SAFE_GLOB_CHARS = /^[a-zA-Z0-9_\-.*?[\]{}/\\,!]+$/;
  */
 export function isValidGlob(pattern: string): boolean {
 	// Empty check
-	if (!pattern || pattern.trim() === "") {
-		return false;
+	if (!pattern || pattern.trim() === '') {
+		return false
 	}
 
 	// Trim before checking (allow leading/trailing whitespace)
-	const trimmed = pattern.trim();
+	const trimmed = pattern.trim()
 
 	// Check for safe characters only
 	if (!SAFE_GLOB_CHARS.test(trimmed)) {
-		return false;
+		return false
 	}
 
 	// Check for balanced brackets
-	let bracketDepth = 0;
-	let braceDepth = 0;
+	let bracketDepth = 0
+	let braceDepth = 0
 	for (const char of trimmed) {
-		if (char === "[") bracketDepth++;
-		if (char === "]") bracketDepth--;
-		if (char === "{") braceDepth++;
-		if (char === "}") braceDepth--;
-		if (bracketDepth < 0 || braceDepth < 0) return false;
+		if (char === '[') bracketDepth++
+		if (char === ']') bracketDepth--
+		if (char === '{') braceDepth++
+		if (char === '}') braceDepth--
+		if (bracketDepth < 0 || braceDepth < 0) return false
 	}
 
-	return bracketDepth === 0 && braceDepth === 0;
+	return bracketDepth === 0 && braceDepth === 0
 }
 
 /**
@@ -100,10 +100,10 @@ export function validateGlob(pattern: string): ValidationResult {
 		return {
 			valid: false,
 			error: `Invalid glob pattern: ${pattern}. Use patterns like "*.py", "**/*.ts", or "src/**/*.js"`,
-		};
+		}
 	}
 
-	return { valid: true, value: pattern.trim() };
+	return { valid: true, value: pattern.trim() }
 }
 
 // ============================================================================
@@ -119,7 +119,7 @@ export function validateGlob(pattern: string): ValidationResult {
  * While modern spawn APIs use array-based arguments (not shell strings),
  * validating against these provides an additional security layer.
  */
-export const SHELL_METACHARACTERS: RegExp = /[;&|<>`$\\]/;
+export const SHELL_METACHARACTERS: RegExp = /[;&|<>`$\\]/
 
 /**
  * Validate that a pattern doesn't contain dangerous shell metacharacters.
@@ -140,7 +140,7 @@ export const SHELL_METACHARACTERS: RegExp = /[;&|<>`$\\]/;
  */
 export function validateShellSafePattern(pattern: string): void {
 	if (SHELL_METACHARACTERS.test(pattern)) {
-		throw new Error(`Pattern contains shell metacharacters: ${pattern}`);
+		throw new Error(`Pattern contains shell metacharacters: ${pattern}`)
 	}
 }
 
@@ -159,19 +159,19 @@ const REDOS_PATTERNS = [
 	/\(([^|)]+)\|\1\)[+*]/,
 	// Long repeating groups: (.+.+)+
 	/\(\.[+*]\.[+*]\)[+*]/,
-];
+]
 
 /**
  * Default maximum pattern length (500 chars).
  * Patterns longer than this are considered risky.
  */
-const DEFAULT_MAX_PATTERN_LENGTH = 500;
+const DEFAULT_MAX_PATTERN_LENGTH = 500
 
 /**
  * Maximum allowed consecutive quantifiers (2).
  * Patterns with more than this are considered risky.
  */
-const MAX_QUANTIFIER_NESTING = 2;
+const MAX_QUANTIFIER_NESTING = 2
 
 /**
  * Check if a regex pattern is potentially vulnerable to ReDoS.
@@ -201,22 +201,22 @@ export function isRegexSafe(
 	// Check for known dangerous patterns
 	for (const dangerous of REDOS_PATTERNS) {
 		if (dangerous.test(pattern)) {
-			return false;
+			return false
 		}
 	}
 
 	// Check for excessive quantifier nesting
-	const quantifierNesting = (pattern.match(/[+*?]{2,}/g) || []).length;
+	const quantifierNesting = (pattern.match(/[+*?]{2,}/g) || []).length
 	if (quantifierNesting > MAX_QUANTIFIER_NESTING) {
-		return false;
+		return false
 	}
 
 	// Check pattern length (very long patterns can be problematic)
 	if (pattern.length > maxLength) {
-		return false;
+		return false
 	}
 
-	return true;
+	return true
 }
 
 /**
@@ -244,8 +244,8 @@ export function isRegexSafe(
  */
 export function validateRegex(pattern: string): ValidationResult<RegExp> {
 	// Empty check
-	if (!pattern || pattern.trim() === "") {
-		return { valid: false, error: "Search pattern cannot be empty" };
+	if (!pattern || pattern.trim() === '') {
+		return { valid: false, error: 'Search pattern cannot be empty' }
 	}
 
 	// ReDoS safety check
@@ -253,17 +253,17 @@ export function validateRegex(pattern: string): ValidationResult<RegExp> {
 		return {
 			valid: false,
 			error:
-				"Pattern may cause performance issues. Simplify nested quantifiers.",
-		};
+				'Pattern may cause performance issues. Simplify nested quantifiers.',
+		}
 	}
 
 	// Try to compile the regex (trim first)
-	const trimmed = pattern.trim();
+	const trimmed = pattern.trim()
 	try {
-		const compiled = new RegExp(trimmed);
-		return { valid: true, value: compiled };
+		const compiled = new RegExp(trimmed)
+		return { valid: true, value: compiled }
 	} catch (e) {
-		const message = e instanceof Error ? e.message : "Unknown error";
-		return { valid: false, error: `Invalid regex: ${message}` };
+		const message = e instanceof Error ? e.message : 'Unknown error'
+		return { valid: false, error: `Invalid regex: ${message}` }
 	}
 }

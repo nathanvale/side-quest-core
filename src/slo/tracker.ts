@@ -2,16 +2,16 @@
  * SLO tracking with burn rate calculation and breach detection.
  */
 
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { SLOPersistence } from "./persistence.js";
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { SLOPersistence } from './persistence.js'
 import type {
 	SLOBreachResult,
 	SLODefinition,
 	SLOEvent,
 	SLOTrackerConfig,
 	SLOWindow,
-} from "./types.js";
+} from './types.js'
 
 /**
  * SLO tracker for monitoring service level objectives.
@@ -49,23 +49,23 @@ import type {
  * ```
  */
 export class SLOTracker {
-	private readonly definitions: Record<string, SLODefinition>;
-	private readonly persistence: SLOPersistence;
-	private readonly inMemoryEvents = new Map<string, SLOEvent[]>();
+	private readonly definitions: Record<string, SLODefinition>
+	private readonly persistence: SLOPersistence
+	private readonly inMemoryEvents = new Map<string, SLOEvent[]>()
 
 	constructor(config: SLOTrackerConfig) {
-		this.definitions = config.definitions;
+		this.definitions = config.definitions
 
 		const persistencePath =
 			config.persistencePath ??
-			join(homedir(), ".claude", "logs", "slo-events.jsonl");
+			join(homedir(), '.claude', 'logs', 'slo-events.jsonl')
 
 		this.persistence = new SLOPersistence({
 			filePath: persistencePath,
 			maxSizeBytes: config.maxFileSizeBytes ?? 10 * 1024 * 1024, // 10MB
 			maxAgeDays: config.maxAgeDays ?? 90,
 			logger: config.logger,
-		});
+		})
 	}
 
 	/**
@@ -73,10 +73,10 @@ export class SLOTracker {
 	 * Useful for testing to ensure async loading completes.
 	 */
 	async ensureLoaded(): Promise<void> {
-		const events = await this.persistence.loadEvents();
+		const events = await this.persistence.loadEvents()
 		// Merge loaded events into in-memory cache
 		for (const [sloName, evts] of events) {
-			this.inMemoryEvents.set(sloName, evts);
+			this.inMemoryEvents.set(sloName, evts)
 		}
 	}
 
@@ -100,9 +100,9 @@ export class SLOTracker {
 	 * ```
 	 */
 	recordEvent(sloName: string, violated: boolean, value?: number): void {
-		const slo = this.definitions[sloName];
+		const slo = this.definitions[sloName]
 		if (!slo) {
-			return;
+			return
 		}
 
 		const event: SLOEvent = {
@@ -111,17 +111,17 @@ export class SLOTracker {
 			sloName,
 			value: value ?? slo.threshold,
 			threshold: slo.threshold,
-		};
+		}
 
 		// Store in memory
-		const events = this.inMemoryEvents.get(sloName) ?? [];
-		events.push(event);
-		this.inMemoryEvents.set(sloName, events);
+		const events = this.inMemoryEvents.get(sloName) ?? []
+		events.push(event)
+		this.inMemoryEvents.set(sloName, events)
 
 		// Persist to disk (fire-and-forget)
 		this.persistence.appendEvent(event).catch(() => {
 			// Error already logged by persistence layer
-		});
+		})
 	}
 
 	/**
@@ -150,37 +150,37 @@ export class SLOTracker {
 	 */
 	async getBurnRate(sloName: string): Promise<number> {
 		// Ensure events are loaded from disk before calculating
-		await this.ensureLoaded();
+		await this.ensureLoaded()
 
-		const slo = this.definitions[sloName];
+		const slo = this.definitions[sloName]
 		if (!slo) {
-			return 0;
+			return 0
 		}
 
-		const allEvents = this.inMemoryEvents.get(sloName) ?? [];
+		const allEvents = this.inMemoryEvents.get(sloName) ?? []
 		if (allEvents.length === 0) {
-			return 0;
+			return 0
 		}
 
 		// Filter events to only those within the SLO window
-		const windowMs = getWindowMs(slo.window);
-		const cutoffTime = Date.now() - windowMs;
-		const recentEvents = allEvents.filter((e) => e.timestamp >= cutoffTime);
+		const windowMs = getWindowMs(slo.window)
+		const cutoffTime = Date.now() - windowMs
+		const recentEvents = allEvents.filter((e) => e.timestamp >= cutoffTime)
 
 		if (recentEvents.length === 0) {
-			return 0;
+			return 0
 		}
 
 		// Calculate violation rate
-		const violations = recentEvents.filter((e) => e.violated).length;
-		const violationRate = violations / recentEvents.length;
+		const violations = recentEvents.filter((e) => e.violated).length
+		const violationRate = violations / recentEvents.length
 
 		// Burn rate = actual violation rate / allowed violation rate (error budget)
 		// If errorBudget is 0.05 (5%), and we're violating at 0.05 rate, burnRate = 1
 		// If we're violating at 0.10 rate, burnRate = 2 (consuming twice as fast)
-		const burnRate = violationRate / slo.errorBudget;
+		const burnRate = violationRate / slo.errorBudget
 
-		return burnRate;
+		return burnRate
 	}
 
 	/**
@@ -202,41 +202,41 @@ export class SLOTracker {
 		sloName: string,
 		currentValue: number,
 	): Promise<SLOBreachResult> {
-		const slo = this.definitions[sloName];
+		const slo = this.definitions[sloName]
 		if (!slo) {
 			return {
 				breached: false,
 				burnRate: 0,
 				currentValue,
 				slo: {
-					name: "Unknown",
+					name: 'Unknown',
 					target: 0,
 					threshold: 0,
-					unit: "count",
-					window: "24h",
+					unit: 'count',
+					window: '24h',
 					errorBudget: 0,
 				},
-			};
+			}
 		}
 
 		// For latency (ms), breach if current > threshold
 		// For percentages, breach if current < threshold
 		const breached =
-			slo.unit === "ms"
+			slo.unit === 'ms'
 				? currentValue > slo.threshold
-				: currentValue < slo.threshold;
+				: currentValue < slo.threshold
 
 		// Get actual burn rate from recorded events
-		const calculatedBurnRate = await this.getBurnRate(sloName);
+		const calculatedBurnRate = await this.getBurnRate(sloName)
 
 		// Use simplified burn rate if no events have been recorded yet:
 		// - 1 = fully consuming error budget (when breached)
 		// - 0 = not consuming budget (when within SLO)
 		// Once events are recorded, use the calculated burn rate from event history.
 		const burnRate =
-			calculatedBurnRate > 0 ? calculatedBurnRate : breached ? 1 : 0;
+			calculatedBurnRate > 0 ? calculatedBurnRate : breached ? 1 : 0
 
-		return { breached, burnRate, currentValue, slo };
+		return { breached, burnRate, currentValue, slo }
 	}
 
 	/**
@@ -245,7 +245,7 @@ export class SLOTracker {
 	 * @returns Array of SLO names
 	 */
 	getSLONames(): string[] {
-		return Object.keys(this.definitions);
+		return Object.keys(this.definitions)
 	}
 
 	/**
@@ -255,7 +255,7 @@ export class SLOTracker {
 	 * @returns SLO definition or undefined if not found
 	 */
 	getSLODefinition(sloName: string): SLODefinition | undefined {
-		return this.definitions[sloName];
+		return this.definitions[sloName]
 	}
 
 	/**
@@ -263,8 +263,8 @@ export class SLOTracker {
 	 * Also resets the disk load flag to force reload on next access.
 	 */
 	reset(): void {
-		this.inMemoryEvents.clear();
-		this.persistence.reset();
+		this.inMemoryEvents.clear()
+		this.persistence.reset()
 	}
 }
 
@@ -275,7 +275,7 @@ export class SLOTracker {
  * @returns SLO tracker instance
  */
 export function createSLOTracker(config: SLOTrackerConfig): SLOTracker {
-	return new SLOTracker(config);
+	return new SLOTracker(config)
 }
 
 /**
@@ -286,13 +286,13 @@ export function createSLOTracker(config: SLOTrackerConfig): SLOTracker {
  */
 function getWindowMs(window: SLOWindow): number {
 	switch (window) {
-		case "1h":
-			return 60 * 60 * 1000;
-		case "24h":
-			return 24 * 60 * 60 * 1000;
-		case "7d":
-			return 7 * 24 * 60 * 60 * 1000;
-		case "30d":
-			return 30 * 24 * 60 * 60 * 1000;
+		case '1h':
+			return 60 * 60 * 1000
+		case '24h':
+			return 24 * 60 * 60 * 1000
+		case '7d':
+			return 7 * 24 * 60 * 60 * 1000
+		case '30d':
+			return 30 * 24 * 60 * 60 * 1000
 	}
 }

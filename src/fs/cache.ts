@@ -5,8 +5,8 @@
  * Generic cache management that can be used by any plugin needing persistent caching.
  */
 
-import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 
 /**
  * Ensure a cache directory exists for a given repository and cache name.
@@ -25,14 +25,14 @@ import { join } from "node:path";
  * ```
  */
 export function ensureCacheDir(repoPath: string, cacheName: string): string {
-	const cacheDir = join(repoPath, ".kit", cacheName);
+	const cacheDir = join(repoPath, '.kit', cacheName)
 
 	// Ensure directory exists
 	if (!existsSync(cacheDir)) {
-		mkdirSync(cacheDir, { recursive: true });
+		mkdirSync(cacheDir, { recursive: true })
 	}
 
-	return cacheDir;
+	return cacheDir
 }
 
 /**
@@ -56,15 +56,15 @@ export function ensureCacheDir(repoPath: string, cacheName: string): string {
 export function isCachePopulated(cacheDir: string): boolean {
 	// If cache directory doesn't exist, it's not populated
 	if (!existsSync(cacheDir)) {
-		return false;
+		return false
 	}
 
 	// Check if there are files in the cache directory
 	try {
-		const files = readdirSync(cacheDir);
-		return files.length > 0;
+		const files = readdirSync(cacheDir)
+		return files.length > 0
 	} catch {
-		return false;
+		return false
 	}
 }
 
@@ -89,19 +89,19 @@ export function getCacheStats(
 	cacheDir: string,
 ): { fileCount: number; totalBytes: number } | null {
 	if (!existsSync(cacheDir)) {
-		return null;
+		return null
 	}
 
 	try {
-		const files = readdirSync(cacheDir);
-		let totalBytes = 0;
+		const files = readdirSync(cacheDir)
+		let totalBytes = 0
 
 		for (const file of files) {
 			try {
-				const filePath = join(cacheDir, file);
-				const stats = statSync(filePath);
+				const filePath = join(cacheDir, file)
+				const stats = statSync(filePath)
 				if (stats.isFile()) {
-					totalBytes += stats.size;
+					totalBytes += stats.size
 				}
 			} catch {}
 		}
@@ -109,8 +109,8 @@ export function getCacheStats(
 		return {
 			fileCount: files.length,
 			totalBytes,
-		};
+		}
 	} catch {
-		return null;
+		return null
 	}
 }

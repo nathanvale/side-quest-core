@@ -19,10 +19,10 @@
  * - **unknown**: Unable to determine category
  */
 export type ErrorCategory =
-	| "transient"
-	| "permanent"
-	| "configuration"
-	| "unknown";
+	| 'transient'
+	| 'permanent'
+	| 'configuration'
+	| 'unknown'
 
 /**
  * Standardized error codes for incident triage.
@@ -30,12 +30,12 @@ export type ErrorCategory =
  * Maps common error patterns to actionable codes for filtering and alerting.
  */
 export type ErrorCode =
-	| "NETWORK_ERROR" // Connection failures, DNS issues
-	| "TIMEOUT" // Operation timed out
-	| "NOT_FOUND" // File/resource not found
-	| "VALIDATION" // Input validation failed
-	| "PERMISSION" // Permission denied
-	| "UNKNOWN_ERROR"; // Unable to categorize
+	| 'NETWORK_ERROR' // Connection failures, DNS issues
+	| 'TIMEOUT' // Operation timed out
+	| 'NOT_FOUND' // File/resource not found
+	| 'VALIDATION' // Input validation failed
+	| 'PERMISSION' // Permission denied
+	| 'UNKNOWN_ERROR' // Unable to categorize
 
 /**
  * Categorize an error by analyzing its message for known patterns.
@@ -56,60 +56,60 @@ export type ErrorCode =
  * ```
  */
 export function categorizeError(error: unknown): {
-	category: ErrorCategory;
-	code: ErrorCode;
+	category: ErrorCategory
+	code: ErrorCode
 } {
 	if (!(error instanceof Error)) {
-		return { category: "unknown", code: "UNKNOWN_ERROR" };
+		return { category: 'unknown', code: 'UNKNOWN_ERROR' }
 	}
 
-	const msg = error.message.toLowerCase();
+	const msg = error.message.toLowerCase()
 
 	// Network errors (transient)
 	if (
-		msg.includes("econnrefused") ||
-		msg.includes("enotfound") ||
-		msg.includes("network") ||
-		msg.includes("fetch failed")
+		msg.includes('econnrefused') ||
+		msg.includes('enotfound') ||
+		msg.includes('network') ||
+		msg.includes('fetch failed')
 	) {
-		return { category: "transient", code: "NETWORK_ERROR" };
+		return { category: 'transient', code: 'NETWORK_ERROR' }
 	}
 
 	// Timeout errors (transient)
-	if (msg.includes("timeout") || msg.includes("timed out")) {
-		return { category: "transient", code: "TIMEOUT" };
+	if (msg.includes('timeout') || msg.includes('timed out')) {
+		return { category: 'transient', code: 'TIMEOUT' }
 	}
 
 	// Not found errors (permanent)
 	if (
-		msg.includes("not found") ||
-		msg.includes("enoent") ||
-		msg.includes("no such file")
+		msg.includes('not found') ||
+		msg.includes('enoent') ||
+		msg.includes('no such file')
 	) {
-		return { category: "permanent", code: "NOT_FOUND" };
+		return { category: 'permanent', code: 'NOT_FOUND' }
 	}
 
 	// Validation errors (permanent)
 	if (
-		msg.includes("invalid") ||
-		msg.includes("validation") ||
-		msg.includes("must be") ||
-		msg.includes("required")
+		msg.includes('invalid') ||
+		msg.includes('validation') ||
+		msg.includes('must be') ||
+		msg.includes('required')
 	) {
-		return { category: "permanent", code: "VALIDATION" };
+		return { category: 'permanent', code: 'VALIDATION' }
 	}
 
 	// Permission errors (configuration)
 	if (
-		msg.includes("permission") ||
-		msg.includes("eacces") ||
-		msg.includes("eperm") ||
-		msg.includes("unauthorized")
+		msg.includes('permission') ||
+		msg.includes('eacces') ||
+		msg.includes('eperm') ||
+		msg.includes('unauthorized')
 	) {
-		return { category: "configuration", code: "PERMISSION" };
+		return { category: 'configuration', code: 'PERMISSION' }
 	}
 
-	return { category: "unknown", code: "UNKNOWN_ERROR" };
+	return { category: 'unknown', code: 'UNKNOWN_ERROR' }
 }
 
 /**
@@ -132,5 +132,5 @@ export function categorizeError(error: unknown): {
  * ```
  */
 export function getErrorCategory(error: unknown): ErrorCategory {
-	return categorizeError(error).category;
+	return categorizeError(error).category
 }

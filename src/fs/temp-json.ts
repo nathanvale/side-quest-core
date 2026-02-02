@@ -5,18 +5,18 @@
  * This module handles creation, cleanup, and error recovery automatically.
  */
 
-import { existsSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { existsSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 /**
  * Result of executing an operation that writes to a temp file.
  */
 export interface TempFileExecutionResult {
 	/** Exit code from the operation (0 = success) */
-	exitCode: number;
+	exitCode: number
 	/** Error output from the operation (optional) */
-	stderr?: string;
+	stderr?: string
 }
 
 /**
@@ -48,47 +48,47 @@ export function withTempJsonFileSync<T>(
 	prefix: string,
 	fn: (tempPath: string) => TempFileExecutionResult,
 ): T {
-	const tempFile = join(tmpdir(), `${prefix}-${crypto.randomUUID()}.json`);
+	const tempFile = join(tmpdir(), `${prefix}-${crypto.randomUUID()}.json`)
 
 	try {
 		// Execute operation that writes to temp file
-		const result = fn(tempFile);
+		const result = fn(tempFile)
 
 		// Check for non-zero exit code
 		if (result.exitCode !== 0) {
 			// Clean up before throwing
 			if (existsSync(tempFile)) {
-				rmSync(tempFile);
+				rmSync(tempFile)
 			}
 
-			const errorMsg = result.stderr ? result.stderr.trim() : "Command failed";
+			const errorMsg = result.stderr ? result.stderr.trim() : 'Command failed'
 			throw new Error(
 				`Operation failed with exit code ${result.exitCode}: ${errorMsg}`,
-			);
+			)
 		}
 
 		// Check if output file was created
 		if (!existsSync(tempFile)) {
-			throw new Error("Operation completed but output file not found");
+			throw new Error('Operation completed but output file not found')
 		}
 
 		// Read and parse JSON
-		const jsonContent = readFileSync(tempFile, "utf8");
-		rmSync(tempFile); // Clean up on success
+		const jsonContent = readFileSync(tempFile, 'utf8')
+		rmSync(tempFile) // Clean up on success
 
 		try {
-			return JSON.parse(jsonContent) as T;
+			return JSON.parse(jsonContent) as T
 		} catch (parseError) {
 			throw new Error(
-				`Failed to parse JSON output: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
-			);
+				`Failed to parse JSON output: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+			)
 		}
 	} catch (error) {
 		// Clean up temp file on any error
 		if (existsSync(tempFile)) {
-			rmSync(tempFile);
+			rmSync(tempFile)
 		}
-		throw error;
+		throw error
 	}
 }
 
@@ -116,46 +116,46 @@ export async function withTempJsonFile<T>(
 		tempPath: string,
 	) => Promise<TempFileExecutionResult> | TempFileExecutionResult,
 ): Promise<T> {
-	const tempFile = join(tmpdir(), `${prefix}-${crypto.randomUUID()}.json`);
+	const tempFile = join(tmpdir(), `${prefix}-${crypto.randomUUID()}.json`)
 
 	try {
 		// Execute operation that writes to temp file
-		const result = await fn(tempFile);
+		const result = await fn(tempFile)
 
 		// Check for non-zero exit code
 		if (result.exitCode !== 0) {
 			// Clean up before throwing
 			if (existsSync(tempFile)) {
-				rmSync(tempFile);
+				rmSync(tempFile)
 			}
 
-			const errorMsg = result.stderr ? result.stderr.trim() : "Command failed";
+			const errorMsg = result.stderr ? result.stderr.trim() : 'Command failed'
 			throw new Error(
 				`Operation failed with exit code ${result.exitCode}: ${errorMsg}`,
-			);
+			)
 		}
 
 		// Check if output file was created
 		if (!existsSync(tempFile)) {
-			throw new Error("Operation completed but output file not found");
+			throw new Error('Operation completed but output file not found')
 		}
 
 		// Read and parse JSON
-		const jsonContent = readFileSync(tempFile, "utf8");
-		rmSync(tempFile); // Clean up on success
+		const jsonContent = readFileSync(tempFile, 'utf8')
+		rmSync(tempFile) // Clean up on success
 
 		try {
-			return JSON.parse(jsonContent) as T;
+			return JSON.parse(jsonContent) as T
 		} catch (parseError) {
 			throw new Error(
-				`Failed to parse JSON output: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
-			);
+				`Failed to parse JSON output: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+			)
 		}
 	} catch (error) {
 		// Clean up temp file on any error
 		if (existsSync(tempFile)) {
-			rmSync(tempFile);
+			rmSync(tempFile)
 		}
-		throw error;
+		throw error
 	}
 }

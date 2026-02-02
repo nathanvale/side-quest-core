@@ -18,9 +18,9 @@ import {
 	getCurrentContext,
 	runWithContext,
 	type TraceContext,
-} from "./context.js";
-import { categorizeError } from "./error-category.js";
-import { getLatencyBucket } from "./metrics.js";
+} from './context.js'
+import { categorizeError } from './error-category.js'
+import { getLatencyBucket } from './metrics.js'
 
 /**
  * Simple logger interface for observe utilities.
@@ -32,12 +32,12 @@ export interface ObserveLogger {
 	/**
 	 * Log an informational message with optional structured properties.
 	 */
-	info(message: string, properties?: Record<string, unknown>): void;
+	info(message: string, properties?: Record<string, unknown>): void
 
 	/**
 	 * Log an error message with optional structured properties.
 	 */
-	error(message: string, properties?: Record<string, unknown>): void;
+	error(message: string, properties?: Record<string, unknown>): void
 }
 
 /**
@@ -50,13 +50,13 @@ export interface ObserveOptions<T> {
 	 * Callback invoked on successful operation completion.
 	 * Receives the result and duration in milliseconds.
 	 */
-	onSuccess?(result: T, durationMs: number): void;
+	onSuccess?(result: T, durationMs: number): void
 
 	/**
 	 * Callback invoked on operation failure.
 	 * Receives the error and duration in milliseconds.
 	 */
-	onError?(error: unknown, durationMs: number): void;
+	onError?(error: unknown, durationMs: number): void
 }
 
 /**
@@ -97,31 +97,31 @@ export async function observe<T>(
 	fn: () => Promise<T>,
 	options?: ObserveOptions<T>,
 ): Promise<T> {
-	const startTime = Date.now();
+	const startTime = Date.now()
 
 	try {
-		const result = await fn();
-		const durationMs = Math.max(0, Date.now() - startTime);
+		const result = await fn()
+		const durationMs = Math.max(0, Date.now() - startTime)
 
-		logger.info(`${operation} succeeded`, { durationMs });
-		options?.onSuccess?.(result, durationMs);
+		logger.info(`${operation} succeeded`, { durationMs })
+		options?.onSuccess?.(result, durationMs)
 
-		return result;
+		return result
 	} catch (error: unknown) {
-		const durationMs = Math.max(0, Date.now() - startTime);
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		const { category, code } = categorizeError(error);
+		const durationMs = Math.max(0, Date.now() - startTime)
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		const { category, code } = categorizeError(error)
 
 		logger.error(`${operation} failed`, {
 			error: errorMessage,
 			errorCode: code,
 			errorCategory: category,
 			durationMs,
-		});
+		})
 
-		options?.onError?.(error, durationMs);
+		options?.onError?.(error, durationMs)
 
-		throw error;
+		throw error
 	}
 }
 
@@ -156,31 +156,31 @@ export function observeSync<T>(
 	fn: () => T,
 	options?: ObserveOptions<T>,
 ): T {
-	const startTime = Date.now();
+	const startTime = Date.now()
 
 	try {
-		const result = fn();
-		const durationMs = Math.max(0, Date.now() - startTime);
+		const result = fn()
+		const durationMs = Math.max(0, Date.now() - startTime)
 
-		logger.info(`${operation} succeeded`, { durationMs });
-		options?.onSuccess?.(result, durationMs);
+		logger.info(`${operation} succeeded`, { durationMs })
+		options?.onSuccess?.(result, durationMs)
 
-		return result;
+		return result
 	} catch (error: unknown) {
-		const durationMs = Math.max(0, Date.now() - startTime);
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		const { category, code } = categorizeError(error);
+		const durationMs = Math.max(0, Date.now() - startTime)
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		const { category, code } = categorizeError(error)
 
 		logger.error(`${operation} failed`, {
 			error: errorMessage,
 			errorCode: code,
 			errorCategory: category,
 			durationMs,
-		});
+		})
 
-		options?.onError?.(error, durationMs);
+		options?.onError?.(error, durationMs)
 
-		throw error;
+		throw error
 	}
 }
 
@@ -198,25 +198,25 @@ export interface ObserveWithContextOptions<T> {
 	 * Custom success check for non-throwing failures.
 	 * Use this when your function returns an error object instead of throwing.
 	 */
-	isSuccess?: (result: T) => boolean;
+	isSuccess?: (result: T) => boolean
 
 	/**
 	 * Additional context to include in log messages.
 	 * These properties are merged with the automatic trace context.
 	 */
-	context?: Record<string, unknown>;
+	context?: Record<string, unknown>
 
 	/**
 	 * Explicit parent correlation ID.
 	 * If not provided, inherits from AsyncLocalStorage context.
 	 */
-	parentCid?: string;
+	parentCid?: string
 
 	/**
 	 * Session-level correlation ID.
 	 * If not provided, inherits from AsyncLocalStorage context.
 	 */
-	sessionCid?: string;
+	sessionCid?: string
 }
 
 /**
@@ -229,12 +229,12 @@ export interface ContextAwareLogger {
 	/**
 	 * Log an informational message with structured properties.
 	 */
-	info(message: string, properties: Record<string, unknown>): void;
+	info(message: string, properties: Record<string, unknown>): void
 
 	/**
 	 * Log an error message with structured properties.
 	 */
-	error(message: string, properties: Record<string, unknown>): void;
+	error(message: string, properties: Record<string, unknown>): void
 }
 
 /**
@@ -281,22 +281,22 @@ export async function observeWithContext<T>(
 	options?: ObserveWithContextOptions<T>,
 ): Promise<T> {
 	// Create trace context, inheriting from current context if available
-	const currentContext = getCurrentContext();
+	const currentContext = getCurrentContext()
 	const traceContext = createTraceContext({
 		parentCid: options?.parentCid ?? currentContext?.cid,
 		sessionCid: options?.sessionCid ?? currentContext?.sessionCid,
-	});
+	})
 
-	const startTime = Date.now();
+	const startTime = Date.now()
 
 	// Run operation within trace context for automatic propagation
 	return runWithContext(traceContext, async () => {
 		try {
-			const result = await fn();
-			const durationMs = Math.max(0, Date.now() - startTime);
-			const success = options?.isSuccess ? options.isSuccess(result) : true;
+			const result = await fn()
+			const durationMs = Math.max(0, Date.now() - startTime)
+			const success = options?.isSuccess ? options.isSuccess(result) : true
 
-			logger.info(`${operation} ${success ? "succeeded" : "failed"}`, {
+			logger.info(`${operation} ${success ? 'succeeded' : 'failed'}`, {
 				cid: traceContext.cid,
 				...(traceContext.parentCid && { parentCid: traceContext.parentCid }),
 				...(traceContext.sessionCid && { sessionCid: traceContext.sessionCid }),
@@ -306,15 +306,15 @@ export async function observeWithContext<T>(
 				success,
 				timestamp: new Date().toISOString(),
 				...options?.context,
-			});
+			})
 
-			return result;
+			return result
 		} catch (error: unknown) {
-			const durationMs = Math.max(0, Date.now() - startTime);
+			const durationMs = Math.max(0, Date.now() - startTime)
 			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			const errorStack = error instanceof Error ? error.stack : undefined;
-			const { category, code } = categorizeError(error);
+				error instanceof Error ? error.message : String(error)
+			const errorStack = error instanceof Error ? error.stack : undefined
+			const { category, code } = categorizeError(error)
 
 			logger.error(`${operation} failed`, {
 				cid: traceContext.cid,
@@ -330,11 +330,11 @@ export async function observeWithContext<T>(
 				errorCategory: category,
 				stack: errorStack,
 				...options?.context,
-			});
+			})
 
-			throw error;
+			throw error
 		}
-	});
+	})
 }
 
 /**
@@ -367,22 +367,22 @@ export function observeSyncWithContext<T>(
 	options?: ObserveWithContextOptions<T>,
 ): T {
 	// Create trace context, inheriting from current context if available
-	const currentContext = getCurrentContext();
+	const currentContext = getCurrentContext()
 	const traceContext = createTraceContext({
 		parentCid: options?.parentCid ?? currentContext?.cid,
 		sessionCid: options?.sessionCid ?? currentContext?.sessionCid,
-	});
+	})
 
-	const startTime = Date.now();
+	const startTime = Date.now()
 
 	// Run operation within trace context for automatic propagation
 	return runWithContext(traceContext, () => {
 		try {
-			const result = fn();
-			const durationMs = Math.max(0, Date.now() - startTime);
-			const success = options?.isSuccess ? options.isSuccess(result) : true;
+			const result = fn()
+			const durationMs = Math.max(0, Date.now() - startTime)
+			const success = options?.isSuccess ? options.isSuccess(result) : true
 
-			logger.info(`${operation} ${success ? "succeeded" : "failed"}`, {
+			logger.info(`${operation} ${success ? 'succeeded' : 'failed'}`, {
 				cid: traceContext.cid,
 				...(traceContext.parentCid && { parentCid: traceContext.parentCid }),
 				...(traceContext.sessionCid && { sessionCid: traceContext.sessionCid }),
@@ -392,15 +392,15 @@ export function observeSyncWithContext<T>(
 				success,
 				timestamp: new Date().toISOString(),
 				...options?.context,
-			});
+			})
 
-			return result;
+			return result
 		} catch (error: unknown) {
-			const durationMs = Math.max(0, Date.now() - startTime);
+			const durationMs = Math.max(0, Date.now() - startTime)
 			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			const errorStack = error instanceof Error ? error.stack : undefined;
-			const { category, code } = categorizeError(error);
+				error instanceof Error ? error.message : String(error)
+			const errorStack = error instanceof Error ? error.stack : undefined
+			const { category, code } = categorizeError(error)
 
 			logger.error(`${operation} failed`, {
 				cid: traceContext.cid,
@@ -416,11 +416,11 @@ export function observeSyncWithContext<T>(
 				errorCategory: category,
 				stack: errorStack,
 				...options?.context,
-			});
+			})
 
-			throw error;
+			throw error
 		}
-	});
+	})
 }
 
 /**
@@ -429,4 +429,4 @@ export function observeSyncWithContext<T>(
  * Re-exported from context module for convenience.
  * Returns undefined if not running within an observe context.
  */
-export { getCurrentContext, type TraceContext };
+export { getCurrentContext, type TraceContext }

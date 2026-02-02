@@ -30,11 +30,11 @@ export class TimeoutError extends Error {
 		message: string,
 		public readonly timeoutMs: number,
 	) {
-		super(message);
-		this.name = "TimeoutError";
+		super(message)
+		this.name = 'TimeoutError'
 		// Maintain proper stack trace in V8 environments
 		if (Error.captureStackTrace) {
-			Error.captureStackTrace(this, TimeoutError);
+			Error.captureStackTrace(this, TimeoutError)
 		}
 	}
 }
@@ -63,11 +63,10 @@ export function createTimeoutPromise(
 ): Promise<never> {
 	return new Promise<never>((_, reject) => {
 		setTimeout(() => {
-			const errorMessage =
-				message ?? `Operation timed out after ${timeoutMs}ms`;
-			reject(new TimeoutError(errorMessage, timeoutMs));
-		}, timeoutMs);
-	});
+			const errorMessage = message ?? `Operation timed out after ${timeoutMs}ms`
+			reject(new TimeoutError(errorMessage, timeoutMs))
+		}, timeoutMs)
+	})
 }
 
 /**
@@ -112,5 +111,5 @@ export async function withTimeout<T>(
 	timeoutMs: number,
 	message?: string,
 ): Promise<T> {
-	return Promise.race([promise, createTimeoutPromise(timeoutMs, message)]);
+	return Promise.race([promise, createTimeoutPromise(timeoutMs, message)])
 }

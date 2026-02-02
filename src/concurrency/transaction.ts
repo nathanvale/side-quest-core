@@ -22,19 +22,19 @@
  */
 export interface RollbackOperation {
 	/** Operation name for logging and error reporting */
-	readonly name: string;
+	readonly name: string
 
 	/**
 	 * Execute the operation.
 	 * May return state needed for rollback (e.g., created file path).
 	 */
-	readonly execute: () => Promise<unknown>;
+	readonly execute: () => Promise<unknown>
 
 	/**
 	 * Rollback the operation.
 	 * Receives the result from execute() for state-based cleanup.
 	 */
-	readonly rollback: (result?: unknown) => Promise<void>;
+	readonly rollback: (result?: unknown) => Promise<void>
 }
 
 /**
@@ -43,17 +43,17 @@ export interface RollbackOperation {
 export type TransactionResult<T> =
 	| { readonly success: true; readonly data: T }
 	| {
-			readonly success: false;
-			readonly error: Error;
-			readonly failedAt: string;
-	  };
+			readonly success: false
+			readonly error: Error
+			readonly failedAt: string
+	  }
 
 /**
  * Logger interface for transaction operations.
  */
 export interface TransactionLogger {
-	debug?(message: string, context?: Record<string, unknown>): void;
-	error?(message: string, context?: Record<string, unknown>): void;
+	debug?(message: string, context?: Record<string, unknown>): void
+	error?(message: string, context?: Record<string, unknown>): void
 }
 
 /**
@@ -98,9 +98,9 @@ export interface TransactionLogger {
  * ```
  */
 export class Transaction {
-	private operations: RollbackOperation[] = [];
-	private completed: Array<{ op: RollbackOperation; result: unknown }> = [];
-	private logger?: TransactionLogger;
+	private operations: RollbackOperation[] = []
+	private completed: Array<{ op: RollbackOperation; result: unknown }> = []
+	private logger?: TransactionLogger
 
 	/**
 	 * Create a new transaction.
@@ -108,7 +108,7 @@ export class Transaction {
 	 * @param options - Optional configuration
 	 */
 	constructor(options?: { logger?: TransactionLogger }) {
-		this.logger = options?.logger;
+		this.logger = options?.logger
 	}
 
 	/**
@@ -119,7 +119,7 @@ export class Transaction {
 	 * @param operation - Operation with execute and rollback functions
 	 */
 	add(operation: RollbackOperation): void {
-		this.operations.push(operation);
+		this.operations.push(operation)
 	}
 
 	/**
@@ -133,42 +133,42 @@ export class Transaction {
 	 * @returns Transaction result with success flag and data/error
 	 */
 	async execute<T = void>(): Promise<TransactionResult<T>> {
-		this.logger?.debug?.("Transaction starting", {
+		this.logger?.debug?.('Transaction starting', {
 			operationCount: this.operations.length,
 			operationNames: this.operations.map((op) => op.name),
-		});
+		})
 
 		try {
-			let lastResult: unknown;
+			let lastResult: unknown
 
 			for (const op of this.operations) {
-				this.logger?.debug?.("Executing operation", { name: op.name });
-				const result = await op.execute();
-				this.completed.push({ op, result });
-				lastResult = result;
+				this.logger?.debug?.('Executing operation', { name: op.name })
+				const result = await op.execute()
+				this.completed.push({ op, result })
+				lastResult = result
 			}
 
-			this.logger?.debug?.("Transaction succeeded", {
+			this.logger?.debug?.('Transaction succeeded', {
 				completedCount: this.completed.length,
-			});
+			})
 
-			return { success: true, data: lastResult as T };
+			return { success: true, data: lastResult as T }
 		} catch (error) {
-			const failedOp = this.operations[this.completed.length];
+			const failedOp = this.operations[this.completed.length]
 
-			this.logger?.error?.("Transaction failed, rolling back", {
-				failedAt: failedOp?.name || "unknown",
+			this.logger?.error?.('Transaction failed, rolling back', {
+				failedAt: failedOp?.name || 'unknown',
 				completedCount: this.completed.length,
 				error: error instanceof Error ? error.message : String(error),
-			});
+			})
 
-			await this.rollback();
+			await this.rollback()
 
 			return {
 				success: false,
 				error: error as Error,
-				failedAt: failedOp?.name || "unknown",
-			};
+				failedAt: failedOp?.name || 'unknown',
+			}
 		}
 	}
 
@@ -182,20 +182,20 @@ export class Transaction {
 		// Rollback in reverse order
 		for (const { op, result } of this.completed.reverse()) {
 			try {
-				this.logger?.debug?.("Rolling back operation", { name: op.name });
-				await op.rollback(result);
+				this.logger?.debug?.('Rolling back operation', { name: op.name })
+				await op.rollback(result)
 			} catch (rollbackError) {
 				// Log but continue - we want to rollback as much as possible
-				this.logger?.error?.("Rollback failed for operation", {
+				this.logger?.error?.('Rollback failed for operation', {
 					name: op.name,
 					error:
 						rollbackError instanceof Error
 							? rollbackError.message
 							: String(rollbackError),
-				});
+				})
 			}
 		}
-		this.completed = [];
+		this.completed = []
 	}
 
 	/**
@@ -204,22 +204,22 @@ export class Transaction {
 	 * Useful for reusing a Transaction instance.
 	 */
 	clear(): void {
-		this.operations = [];
-		this.completed = [];
+		this.operations = []
+		this.completed = []
 	}
 
 	/**
 	 * Get number of pending operations.
 	 */
 	get pendingCount(): number {
-		return this.operations.length;
+		return this.operations.length
 	}
 
 	/**
 	 * Get number of completed operations.
 	 */
 	get completedCount(): number {
-		return this.completed.length;
+		return this.completed.length
 	}
 }
 
@@ -257,9 +257,9 @@ export async function executeTransaction<T = void>(
 	operations: readonly RollbackOperation[],
 	options?: { logger?: TransactionLogger },
 ): Promise<TransactionResult<T>> {
-	const tx = new Transaction(options);
+	const tx = new Transaction(options)
 	for (const op of operations) {
-		tx.add(op);
+		tx.add(op)
 	}
-	return tx.execute<T>();
+	return tx.execute<T>()
 }

@@ -7,9 +7,9 @@
  * @module fs/safety
  */
 
-import { realpathSync } from "node:fs";
-import { dirname, normalize, resolve } from "node:path";
-import { pathExistsSync } from "./index.js";
+import { realpathSync } from 'node:fs'
+import { dirname, normalize, resolve } from 'node:path'
+import { pathExistsSync } from './index.js'
 
 /**
  * Validate file path to prevent path traversal and other security issues.
@@ -32,27 +32,27 @@ import { pathExistsSync } from "./index.js";
  * ```
  */
 export function validateFilePath(inputPath: string): string {
-	const normalized = normalize(inputPath);
+	const normalized = normalize(inputPath)
 
 	// Prevent absolute paths
-	if (normalized.startsWith("/")) {
-		throw new Error(`Path must be relative (got: ${inputPath})`);
+	if (normalized.startsWith('/')) {
+		throw new Error(`Path must be relative (got: ${inputPath})`)
 	}
 
 	// Prevent path traversal
-	if (normalized.includes("..")) {
-		throw new Error(`Path traversal not allowed (got: ${inputPath})`);
+	if (normalized.includes('..')) {
+		throw new Error(`Path traversal not allowed (got: ${inputPath})`)
 	}
 
 	// Prevent hidden files (common security risk)
-	const parts = normalized.split("/");
+	const parts = normalized.split('/')
 	for (const part of parts) {
-		if (part.startsWith(".")) {
-			throw new Error(`Hidden files not allowed (got: ${inputPath})`);
+		if (part.startsWith('.')) {
+			throw new Error(`Hidden files not allowed (got: ${inputPath})`)
 		}
 	}
 
-	return normalized;
+	return normalized
 }
 
 /**
@@ -75,25 +75,25 @@ export function validateFilePath(inputPath: string): string {
 export function validatePathSafety(inputPath: string, rootPath: string): void {
 	// Reject suspicious patterns immediately
 	if (
-		inputPath.includes("..") ||
-		inputPath.includes("~") ||
-		(inputPath.startsWith("/") && !inputPath.startsWith(rootPath))
+		inputPath.includes('..') ||
+		inputPath.includes('~') ||
+		(inputPath.startsWith('/') && !inputPath.startsWith(rootPath))
 	) {
-		throw new Error(`Unsafe path pattern: "${inputPath}"`);
+		throw new Error(`Unsafe path pattern: "${inputPath}"`)
 	}
 
 	// Resolve symbolic links and normalize paths to prevent symlink attacks
-	const resolved = resolve(rootPath, inputPath);
-	const rootResolved = resolve(rootPath);
+	const resolved = resolve(rootPath, inputPath)
+	const rootResolved = resolve(rootPath)
 
 	// Canonicalize paths using realpath if they exist
 	// This prevents symlink-based path traversal (e.g., symlink pointing outside root)
-	let canonicalResolved = resolved;
-	let canonicalRoot = rootResolved;
+	let canonicalResolved = resolved
+	let canonicalRoot = rootResolved
 
 	try {
 		// Try to canonicalize root path (should always exist)
-		canonicalRoot = realpathSync(rootResolved);
+		canonicalRoot = realpathSync(rootResolved)
 	} catch {
 		// Root doesn't exist - use resolved path (safe for validation)
 	}
@@ -101,14 +101,14 @@ export function validatePathSafety(inputPath: string, rootPath: string): void {
 	try {
 		// Try to canonicalize destination (may not exist yet)
 		// Walk up to find existing parent and canonicalize from there
-		let current = resolved;
+		let current = resolved
 		while (!pathExistsSync(current) && current !== rootResolved) {
-			current = dirname(current);
+			current = dirname(current)
 		}
 		if (pathExistsSync(current)) {
-			const canonicalParent = realpathSync(current);
-			const relativeSuffix = resolved.slice(current.length);
-			canonicalResolved = canonicalParent + relativeSuffix;
+			const canonicalParent = realpathSync(current)
+			const relativeSuffix = resolved.slice(current.length)
+			canonicalResolved = canonicalParent + relativeSuffix
 		}
 	} catch {
 		// Path doesn't exist yet - use resolved path (creation will fail if symlink attack)
@@ -121,7 +121,7 @@ export function validatePathSafety(inputPath: string, rootPath: string): void {
 	) {
 		throw new Error(
 			`Path traversal detected: "${inputPath}" escapes root boundary`,
-		);
+		)
 	}
 }
 
@@ -143,15 +143,15 @@ export function validatePathSafety(inputPath: string, rootPath: string): void {
  */
 export function sanitizePattern(pattern: string): string {
 	// Remove potentially dangerous patterns
-	let clean = pattern;
+	let clean = pattern
 
 	// Remove nested quantifiers (e.g., (a+)+, (a*)*) - ReDoS risk
-	clean = clean.replace(/\([^)]*[+*][^)]*\)[+*]/g, "");
+	clean = clean.replace(/\([^)]*[+*][^)]*\)[+*]/g, '')
 
 	// Limit pattern length to prevent resource exhaustion
 	if (clean.length > 500) {
-		clean = clean.substring(0, 500);
+		clean = clean.substring(0, 500)
 	}
 
-	return clean;
+	return clean
 }

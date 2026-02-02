@@ -6,28 +6,28 @@
  * Used by runner plugins to detect whether a tool is configured.
  */
 
-import { exists } from "node:fs/promises";
-import { join } from "node:path";
-import { getGitRoot } from "../git/index.js";
+import { exists } from 'node:fs/promises'
+import { join } from 'node:path'
+import { getGitRoot } from '../git/index.js'
 
 /** Result of checking for a config file at the repository root. */
 export interface ConfigAtRootResult {
 	/** Whether a config file was found */
-	found: boolean;
+	found: boolean
 	/** Absolute path to the config file if found */
-	configPath?: string;
+	configPath?: string
 	/** The git root directory that was searched */
-	searchPath?: string;
+	searchPath?: string
 }
 
 /** Result of finding the nearest config file by walking up directories. */
 export interface NearestConfigResult {
 	/** Whether a config file was found */
-	found: boolean;
+	found: boolean
 	/** Absolute path to the config file if found */
-	configPath?: string;
+	configPath?: string
 	/** Directory containing the config file (for running tools from) */
-	configDir?: string;
+	configDir?: string
 }
 
 /**
@@ -42,20 +42,20 @@ export interface NearestConfigResult {
 export async function hasConfigAtRoot(
 	configNames: readonly string[],
 ): Promise<ConfigAtRootResult> {
-	const gitRoot = await getGitRoot();
+	const gitRoot = await getGitRoot()
 
 	if (!gitRoot) {
-		return { found: false };
+		return { found: false }
 	}
 
 	for (const configFile of configNames) {
-		const configPath = join(gitRoot, configFile);
+		const configPath = join(gitRoot, configFile)
 		if (await exists(configPath)) {
-			return { found: true, configPath, searchPath: gitRoot };
+			return { found: true, configPath, searchPath: gitRoot }
 		}
 	}
 
-	return { found: false, searchPath: gitRoot };
+	return { found: false, searchPath: gitRoot }
 }
 
 /**
@@ -73,25 +73,25 @@ export async function findNearestConfig(
 	filePath: string,
 	configNames: readonly string[],
 ): Promise<NearestConfigResult> {
-	const gitRoot = await getGitRoot();
+	const gitRoot = await getGitRoot()
 	if (!gitRoot) {
-		return { found: false };
+		return { found: false }
 	}
 
-	let currentDir = join(filePath, "..");
+	let currentDir = join(filePath, '..')
 
 	while (currentDir.startsWith(gitRoot)) {
 		for (const configFile of configNames) {
-			const configPath = join(currentDir, configFile);
+			const configPath = join(currentDir, configFile)
 			if (await exists(configPath)) {
-				return { found: true, configPath, configDir: currentDir };
+				return { found: true, configPath, configDir: currentDir }
 			}
 		}
 
-		const parentDir = join(currentDir, "..");
-		if (parentDir === currentDir) break;
-		currentDir = parentDir;
+		const parentDir = join(currentDir, '..')
+		if (parentDir === currentDir) break
+		currentDir = parentDir
 	}
 
-	return { found: false };
+	return { found: false }
 }

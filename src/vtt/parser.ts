@@ -11,18 +11,18 @@
  * Parsed VTT cue (subtitle segment).
  */
 export interface VttCue {
-	readonly startTime: string;
-	readonly endTime: string;
-	readonly text: string;
-	readonly speaker?: string;
+	readonly startTime: string
+	readonly endTime: string
+	readonly text: string
+	readonly speaker?: string
 }
 
 /**
  * Result of parsing a VTT file.
  */
 export interface VttParseResult {
-	readonly cues: readonly VttCue[];
-	readonly rawText: string;
+	readonly cues: readonly VttCue[]
+	readonly rawText: string
 }
 
 /**
@@ -32,7 +32,7 @@ export interface VttParseResult {
  * @returns True if the file has a .vtt extension (case-insensitive)
  */
 export function isVttFile(filePath: string): boolean {
-	return filePath.toLowerCase().endsWith(".vtt");
+	return filePath.toLowerCase().endsWith('.vtt')
 }
 
 /**
@@ -40,7 +40,7 @@ export function isVttFile(filePath: string): boolean {
  * Returns the timestamp string as-is (we don't need to convert to ms).
  */
 function parseTimestamp(timestamp: string): string {
-	return timestamp.trim();
+	return timestamp.trim()
 }
 
 /**
@@ -63,87 +63,87 @@ function parseTimestamp(timestamp: string): string {
  * @returns Parsed result with cues array and combined raw text
  */
 export function parseVtt(content: string): VttParseResult {
-	const lines = content.split(/\r?\n/);
-	const cues: VttCue[] = [];
+	const lines = content.split(/\r?\n/)
+	const cues: VttCue[] = []
 
-	let i = 0;
+	let i = 0
 
 	// Skip WEBVTT header and any metadata
 	while (i < lines.length) {
-		const line = lines[i]?.trim() ?? "";
-		if (line.startsWith("WEBVTT")) {
-			i++;
+		const line = lines[i]?.trim() ?? ''
+		if (line.startsWith('WEBVTT')) {
+			i++
 			// Skip any header metadata (lines before first empty line)
-			while (i < lines.length && (lines[i]?.trim() ?? "") !== "") {
-				i++;
+			while (i < lines.length && (lines[i]?.trim() ?? '') !== '') {
+				i++
 			}
-			break;
+			break
 		}
-		i++;
+		i++
 	}
 
 	// Parse cues
 	while (i < lines.length) {
-		const line = lines[i]?.trim() ?? "";
+		const line = lines[i]?.trim() ?? ''
 
 		// Skip empty lines
-		if (line === "") {
-			i++;
-			continue;
+		if (line === '') {
+			i++
+			continue
 		}
 
 		// Check if this line is a timestamp line (contains "-->")
-		if (line.includes("-->")) {
-			const [startPart, endPart] = line.split("-->");
+		if (line.includes('-->')) {
+			const [startPart, endPart] = line.split('-->')
 			if (startPart && endPart) {
-				const startTime = parseTimestamp(startPart);
+				const startTime = parseTimestamp(startPart)
 				// End time might have positioning info after it, strip that
-				const endParts = endPart.trim().split(/\s+/);
-				const endTime = parseTimestamp(endParts[0] ?? endPart);
+				const endParts = endPart.trim().split(/\s+/)
+				const endTime = parseTimestamp(endParts[0] ?? endPart)
 
 				// Collect text lines until next empty line or timestamp
-				i++;
-				const textLines: string[] = [];
-				let speaker: string | undefined;
+				i++
+				const textLines: string[] = []
+				let speaker: string | undefined
 				while (i < lines.length) {
-					const textLine = lines[i] ?? "";
-					const trimmedTextLine = textLine.trim();
+					const textLine = lines[i] ?? ''
+					const trimmedTextLine = textLine.trim()
 					// Stop at empty line or next timestamp
-					if (trimmedTextLine === "" || trimmedTextLine.includes("-->")) {
-						break;
+					if (trimmedTextLine === '' || trimmedTextLine.includes('-->')) {
+						break
 					}
 					// Extract speaker from voice tag if present
-					const extractedSpeaker = extractSpeaker(textLine);
+					const extractedSpeaker = extractSpeaker(textLine)
 					if (extractedSpeaker && !speaker) {
-						speaker = extractedSpeaker;
+						speaker = extractedSpeaker
 					}
 					// Strip VTT styling tags like <v Speaker Name> and </v>
-					const cleanedLine = stripVttTags(textLine);
+					const cleanedLine = stripVttTags(textLine)
 					if (cleanedLine.trim()) {
-						textLines.push(cleanedLine.trim());
+						textLines.push(cleanedLine.trim())
 					}
-					i++;
+					i++
 				}
 
 				if (textLines.length > 0) {
 					cues.push({
 						startTime,
 						endTime,
-						text: textLines.join(" "),
+						text: textLines.join(' '),
 						speaker,
-					});
+					})
 				}
 			}
 		} else {
 			// This might be a cue identifier, skip it
-			i++;
+			i++
 		}
 	}
 
 	// Combine all cue text into raw text
-	const rawText = cues.map((cue) => cue.text).join("\n");
+	const rawText = cues.map((cue) => cue.text).join('\n')
 
-	return { cues, rawText };
+	return { cues, rawText }
 }
 
 /**
@@ -153,8 +153,8 @@ export function parseVtt(content: string): VttParseResult {
  * Returns the speaker name or undefined if not found.
  */
 function extractSpeaker(text: string): string | undefined {
-	const match = text.match(/<v\s+([^>]+)>/i);
-	return match?.[1]?.trim();
+	const match = text.match(/<v\s+([^>]+)>/i)
+	return match?.[1]?.trim()
 }
 
 /**
@@ -170,16 +170,16 @@ function stripVttTags(text: string): string {
 	return (
 		text
 			// Remove voice tags but keep content: <v Name>text</v> -> text
-			.replace(/<v[^>]*>/gi, "")
-			.replace(/<\/v>/gi, "")
+			.replace(/<v[^>]*>/gi, '')
+			.replace(/<\/v>/gi, '')
 			// Remove other common tags
-			.replace(/<\/?[biuc][^>]*>/gi, "")
-			.replace(/<\/?lang[^>]*>/gi, "")
-			.replace(/<\/?ruby[^>]*>/gi, "")
-			.replace(/<\/?rt[^>]*>/gi, "")
+			.replace(/<\/?[biuc][^>]*>/gi, '')
+			.replace(/<\/?lang[^>]*>/gi, '')
+			.replace(/<\/?ruby[^>]*>/gi, '')
+			.replace(/<\/?rt[^>]*>/gi, '')
 			// Remove any remaining tags
-			.replace(/<[^>]+>/g, "")
-	);
+			.replace(/<[^>]+>/g, '')
+	)
 }
 
 /**
@@ -192,29 +192,29 @@ function stripVttTags(text: string): string {
  * @returns Clean text extracted from the VTT, with optional speaker labels
  */
 export function extractTextFromVtt(content: string): string {
-	const result = parseVtt(content);
+	const result = parseVtt(content)
 
 	// Check if any cues have speakers
-	const hasSpeakers = result.cues.some((cue) => cue.speaker);
+	const hasSpeakers = result.cues.some((cue) => cue.speaker)
 
 	if (!hasSpeakers) {
-		return result.rawText;
+		return result.rawText
 	}
 
 	// Format with speaker labels, grouping consecutive cues from same speaker
-	const lines: string[] = [];
-	let currentSpeaker: string | undefined;
+	const lines: string[] = []
+	let currentSpeaker: string | undefined
 
 	for (const cue of result.cues) {
 		if (cue.speaker && cue.speaker !== currentSpeaker) {
 			// New speaker - add speaker label
-			lines.push(`${cue.speaker}: ${cue.text}`);
-			currentSpeaker = cue.speaker;
+			lines.push(`${cue.speaker}: ${cue.text}`)
+			currentSpeaker = cue.speaker
 		} else {
 			// Same speaker or no speaker - just add text
-			lines.push(cue.text);
+			lines.push(cue.text)
 		}
 	}
 
-	return lines.join("\n");
+	return lines.join('\n')
 }

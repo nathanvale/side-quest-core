@@ -13,15 +13,15 @@
  */
 export interface OAuthCredentials {
 	/** OAuth client ID */
-	client_id: string;
+	client_id: string
 	/** OAuth client secret */
-	client_secret: string;
+	client_secret: string
 	/** Authorized redirect URIs */
-	redirect_uris: string[];
+	redirect_uris: string[]
 	/** Authorization endpoint URL */
-	auth_uri: string;
+	auth_uri: string
 	/** Token endpoint URL */
-	token_uri: string;
+	token_uri: string
 }
 
 /**
@@ -32,13 +32,13 @@ export interface OAuthCredentials {
  */
 export interface OAuthToken {
 	/** Access token for API requests */
-	access_token: string;
+	access_token: string
 	/** Refresh token for obtaining new access tokens */
-	refresh_token: string;
+	refresh_token: string
 	/** Space-delimited list of granted scopes */
-	scope: string;
+	scope: string
 	/** Token type (usually "Bearer") */
-	token_type: string;
+	token_type: string
 	/** Expiration time as Unix timestamp in milliseconds */
-	expiry_date: number;
+	expiry_date: number
 }

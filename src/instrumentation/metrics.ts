@@ -13,46 +13,46 @@
 /** Standard latency buckets in milliseconds for histogram tracking */
 const LATENCY_BUCKETS = [
 	10, 50, 100, 250, 500, 1000, 2500, 5000, 10000,
-] as const;
+] as const
 
 /** SLO-aligned histogram buckets in seconds (aligned with SLO thresholds) */
-const SLO_HISTOGRAM_BUCKETS = [1, 5, 10, 30, 60] as const;
+const SLO_HISTOGRAM_BUCKETS = [1, 5, 10, 30, 60] as const
 
 /** In-memory metrics storage */
 export interface MetricLabels {
-	[key: string]: string | number | boolean;
+	[key: string]: string | number | boolean
 }
 
 export interface CounterData {
-	name: string;
-	labels: MetricLabels;
-	value: number;
+	name: string
+	labels: MetricLabels
+	value: number
 }
 
 export interface HistogramObservation {
-	value: number;
-	timestamp: number;
+	value: number
+	timestamp: number
 }
 
 export interface HistogramData {
-	name: string;
-	labels: MetricLabels;
-	observations: HistogramObservation[];
+	name: string
+	labels: MetricLabels
+	observations: HistogramObservation[]
 	/** Incremental bucket counts for O(1) bucket queries */
-	buckets: number[];
+	buckets: number[]
 }
 
 /** Maximum number of observations to retain per histogram (FIFO cleanup) */
-const MAX_HISTOGRAM_OBSERVATIONS = 1000;
+const MAX_HISTOGRAM_OBSERVATIONS = 1000
 
 /** Time-to-live for histogram observations in milliseconds (24 hours) */
-const HISTOGRAM_TTL_MS = 24 * 60 * 60 * 1000;
+const HISTOGRAM_TTL_MS = 24 * 60 * 60 * 1000
 
 /** In-memory counter storage */
-const counters = new Map<string, CounterData>();
+const counters = new Map<string, CounterData>()
 
 /** In-memory histogram storage */
-const histograms = new Map<string, HistogramData>();
+const histograms = new Map<string, HistogramData>()
 
 /**
  * Generate a stable key for metric lookup based on name and labels.
@@ -62,8 +62,8 @@ function getMetricKey(name: string, labels: MetricLabels): string {
 	const sortedLabels = Object.keys(labels)
 		.sort()
 		.map((key) => `${key}=${labels[key]}`)
-		.join(",");
-	return `${name}{${sortedLabels}}`;
+		.join(',')
+	return `${name}{${sortedLabels}}`
 }
 
 /**
@@ -84,13 +84,13 @@ export function incrementCounter(
 	labels: MetricLabels,
 	value = 1,
 ): void {
-	const key = getMetricKey(name, labels);
-	const existing = counters.get(key);
+	const key = getMetricKey(name, labels)
+	const existing = counters.get(key)
 
 	if (existing) {
-		existing.value += value;
+		existing.value += value
 	} else {
-		counters.set(key, { name, labels, value });
+		counters.set(key, { name, labels, value })
 	}
 }
 
@@ -101,22 +101,22 @@ export function incrementCounter(
  * @param histogram - Histogram data to cleanup
  */
 function cleanupHistogramObservations(histogram: HistogramData): void {
-	const now = Date.now();
-	const cutoffTime = now - HISTOGRAM_TTL_MS;
+	const now = Date.now()
+	const cutoffTime = now - HISTOGRAM_TTL_MS
 
 	// Remove observations older than TTL
 	histogram.observations = histogram.observations.filter(
 		(obs) => obs.timestamp >= cutoffTime,
-	);
+	)
 
 	// If still over max size, remove oldest observations (FIFO)
 	if (histogram.observations.length > MAX_HISTOGRAM_OBSERVATIONS) {
-		const excess = histogram.observations.length - MAX_HISTOGRAM_OBSERVATIONS;
-		histogram.observations = histogram.observations.slice(excess);
+		const excess = histogram.observations.length - MAX_HISTOGRAM_OBSERVATIONS
+		histogram.observations = histogram.observations.slice(excess)
 	}
 
 	// Recalculate buckets after cleanup
-	recalculateBuckets(histogram);
+	recalculateBuckets(histogram)
 }
 
 /**
@@ -126,10 +126,10 @@ function cleanupHistogramObservations(histogram: HistogramData): void {
  * @param histogram - Histogram data to recalculate
  */
 function recalculateBuckets(histogram: HistogramData): void {
-	histogram.buckets = new Array(SLO_HISTOGRAM_BUCKETS.length).fill(0);
+	histogram.buckets = new Array(SLO_HISTOGRAM_BUCKETS.length).fill(0)
 
 	for (const obs of histogram.observations) {
-		updateBucketsForValue(histogram.buckets, obs.value);
+		updateBucketsForValue(histogram.buckets, obs.value)
 	}
 }
 
@@ -143,13 +143,13 @@ function recalculateBuckets(histogram: HistogramData): void {
 function updateBucketsForValue(buckets: number[], value: number): void {
 	// Find the first bucket this value fits into
 	for (let i = 0; i < SLO_HISTOGRAM_BUCKETS.length; i++) {
-		const boundary = SLO_HISTOGRAM_BUCKETS[i];
+		const boundary = SLO_HISTOGRAM_BUCKETS[i]
 		if (boundary !== undefined && value <= boundary) {
 			// Increment this bucket and all subsequent buckets (cumulative)
 			for (let j = i; j < SLO_HISTOGRAM_BUCKETS.length; j++) {
-				buckets[j] = (buckets[j] ?? 0) + 1;
+				buckets[j] = (buckets[j] ?? 0) + 1
 			}
-			break;
+			break
 		}
 	}
 }
@@ -178,37 +178,37 @@ export function observeHistogram(
 	value: number,
 	labels: MetricLabels,
 ): void {
-	const key = getMetricKey(name, labels);
-	const existing = histograms.get(key);
+	const key = getMetricKey(name, labels)
+	const existing = histograms.get(key)
 	const observation: HistogramObservation = {
 		value,
 		timestamp: Date.now(),
-	};
+	}
 
 	if (existing) {
-		existing.observations.push(observation);
+		existing.observations.push(observation)
 		// Incremental bucket update (O(1) instead of O(n))
-		updateBucketsForValue(existing.buckets, value);
+		updateBucketsForValue(existing.buckets, value)
 
 		// Cleanup if needed (TTL or max size exceeded)
 		const needsCleanup =
 			existing.observations.length > MAX_HISTOGRAM_OBSERVATIONS ||
 			observation.timestamp - existing.observations[0]!.timestamp >
-				HISTOGRAM_TTL_MS;
+				HISTOGRAM_TTL_MS
 
 		if (needsCleanup) {
-			cleanupHistogramObservations(existing);
+			cleanupHistogramObservations(existing)
 		}
 	} else {
-		const buckets = new Array(SLO_HISTOGRAM_BUCKETS.length).fill(0);
-		updateBucketsForValue(buckets, value);
+		const buckets = new Array(SLO_HISTOGRAM_BUCKETS.length).fill(0)
+		updateBucketsForValue(buckets, value)
 
 		histograms.set(key, {
 			name,
 			labels,
 			observations: [observation],
 			buckets,
-		});
+		})
 	}
 }
 
@@ -218,7 +218,7 @@ export function observeHistogram(
  * @returns Array of counter data
  */
 export function getCounters(): CounterData[] {
-	return Array.from(counters.values());
+	return Array.from(counters.values())
 }
 
 /**
@@ -227,7 +227,7 @@ export function getCounters(): CounterData[] {
  * @returns Array of histogram data
  */
 export function getHistograms(): HistogramData[] {
-	return Array.from(histograms.values());
+	return Array.from(histograms.values())
 }
 
 /**
@@ -244,26 +244,26 @@ export function getHistogramBuckets(
 	name: string,
 	labels: MetricLabels,
 ): { buckets: number[]; boundaries: readonly number[] } {
-	const key = getMetricKey(name, labels);
-	const histogram = histograms.get(key);
+	const key = getMetricKey(name, labels)
+	const histogram = histograms.get(key)
 
 	if (!histogram) {
 		return {
 			buckets: new Array(SLO_HISTOGRAM_BUCKETS.length).fill(0),
 			boundaries: SLO_HISTOGRAM_BUCKETS,
-		};
+		}
 	}
 
 	// Return pre-calculated buckets (O(1) instead of O(n²))
-	return { buckets: [...histogram.buckets], boundaries: SLO_HISTOGRAM_BUCKETS };
+	return { buckets: [...histogram.buckets], boundaries: SLO_HISTOGRAM_BUCKETS }
 }
 
 /**
  * Reset all metrics (useful for testing).
  */
 export function resetMetrics(): void {
-	counters.clear();
-	histograms.clear();
+	counters.clear()
+	histograms.clear()
 }
 
 /**
@@ -275,12 +275,12 @@ export function resetMetrics(): void {
  */
 export function getLatencyBucket(durationMs: number): string {
 	for (let i = 0; i < LATENCY_BUCKETS.length; i++) {
-		const bucket = LATENCY_BUCKETS[i];
+		const bucket = LATENCY_BUCKETS[i]
 		if (bucket !== undefined && durationMs <= bucket) {
-			const prevBucket = i === 0 ? 0 : (LATENCY_BUCKETS[i - 1] ?? 0);
-			return `${prevBucket}-${bucket}ms`;
+			const prevBucket = i === 0 ? 0 : (LATENCY_BUCKETS[i - 1] ?? 0)
+			return `${prevBucket}-${bucket}ms`
 		}
 	}
-	const lastBucket = LATENCY_BUCKETS[LATENCY_BUCKETS.length - 1];
-	return `${lastBucket ?? 10000}+ms`;
+	const lastBucket = LATENCY_BUCKETS[LATENCY_BUCKETS.length - 1]
+	return `${lastBucket ?? 10000}+ms`
 }

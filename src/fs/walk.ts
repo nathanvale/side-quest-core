@@ -7,8 +7,8 @@
  * @module fs/walk
  */
 
-import path from "node:path";
-import { isDirectorySync, isFileSync, readDir } from "./index.js";
+import path from 'node:path'
+import { isDirectorySync, isFileSync, readDir } from './index.js'
 
 /**
  * Options for directory walking.
@@ -18,13 +18,13 @@ export interface WalkDirectoryOptions {
 	 * Directory names to skip during traversal.
 	 * Common examples: ["node_modules", ".git", "dist"]
 	 */
-	readonly skipDirs?: ReadonlyArray<string>;
+	readonly skipDirs?: ReadonlyArray<string>
 
 	/**
 	 * Whether to skip hidden files/directories (starting with ".").
 	 * Defaults to true.
 	 */
-	readonly skipHidden?: boolean;
+	readonly skipHidden?: boolean
 }
 
 /**
@@ -38,7 +38,7 @@ export type FileVisitor = (
 	fullPath: string,
 	relativePath: string,
 	entry: string,
-) => void;
+) => void
 
 /**
  * Recursively walks a directory tree and calls a visitor function for each file.
@@ -78,24 +78,24 @@ export function walkDirectory(
 	onFile: FileVisitor,
 	options: WalkDirectoryOptions = {},
 ): void {
-	const { skipDirs = [], skipHidden = true } = options;
-	const skipDirSet = new Set(skipDirs);
+	const { skipDirs = [], skipHidden = true } = options
+	const skipDirSet = new Set(skipDirs)
 
 	function walk(currentDir: string): void {
 		try {
 			for (const entry of readDir(currentDir)) {
 				// Skip hidden files/folders if configured
-				if (skipHidden && entry.startsWith(".")) continue;
+				if (skipHidden && entry.startsWith('.')) continue
 
 				// Skip specified directories
-				if (skipDirSet.has(entry)) continue;
+				if (skipDirSet.has(entry)) continue
 
-				const fullPath = path.join(currentDir, entry);
+				const fullPath = path.join(currentDir, entry)
 				if (isDirectorySync(fullPath)) {
-					walk(fullPath);
+					walk(fullPath)
 				} else if (isFileSync(fullPath)) {
-					const relativePath = path.relative(rootDir, fullPath);
-					onFile(fullPath, relativePath, entry);
+					const relativePath = path.relative(rootDir, fullPath)
+					onFile(fullPath, relativePath, entry)
 				}
 			}
 		} catch {
@@ -103,5 +103,5 @@ export function walkDirectory(
 		}
 	}
 
-	walk(rootDir);
+	walk(rootDir)
 }

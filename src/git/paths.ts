@@ -23,53 +23,53 @@
  * ```
  */
 export function unescapeGitPath(gitPath: string): string {
-	const bytes: number[] = [];
-	let i = 0;
+	const bytes: number[] = []
+	let i = 0
 
 	while (i < gitPath.length) {
-		if (gitPath[i] === "\\" && i + 1 < gitPath.length) {
-			const nextChar = gitPath[i + 1];
+		if (gitPath[i] === '\\' && i + 1 < gitPath.length) {
+			const nextChar = gitPath[i + 1]
 
 			// Check for octal escape \ooo (3 octal digits)
 			if (i + 3 < gitPath.length) {
-				const nextThree = gitPath.substring(i + 1, i + 4);
+				const nextThree = gitPath.substring(i + 1, i + 4)
 				if (/^[0-7]{3}$/.test(nextThree)) {
-					bytes.push(Number.parseInt(nextThree, 8));
-					i += 4;
-					continue;
+					bytes.push(Number.parseInt(nextThree, 8))
+					i += 4
+					continue
 				}
 			}
 
 			// Check for single-char escapes
 			switch (nextChar) {
-				case "n":
-					bytes.push(10);
-					i += 2;
-					continue;
-				case "t":
-					bytes.push(9);
-					i += 2;
-					continue;
-				case "r":
-					bytes.push(13);
-					i += 2;
-					continue;
-				case "\\":
-					bytes.push(92);
-					i += 2;
-					continue;
+				case 'n':
+					bytes.push(10)
+					i += 2
+					continue
+				case 't':
+					bytes.push(9)
+					i += 2
+					continue
+				case 'r':
+					bytes.push(13)
+					i += 2
+					continue
+				case '\\':
+					bytes.push(92)
+					i += 2
+					continue
 				case '"':
-					bytes.push(34);
-					i += 2;
-					continue;
+					bytes.push(34)
+					i += 2
+					continue
 			}
 		}
 
 		// Regular ASCII character - add its char code
-		bytes.push(gitPath.charCodeAt(i));
-		i++;
+		bytes.push(gitPath.charCodeAt(i))
+		i++
 	}
 
 	// Decode UTF-8 bytes to string
-	return new TextDecoder("utf-8").decode(new Uint8Array(bytes));
+	return new TextDecoder('utf-8').decode(new Uint8Array(bytes))
 }

@@ -9,4 +9,4 @@ export {
 	isRecoverableError,
 	isStructuredError,
 	StructuredError,
-} from "./structured-error";
+} from './structured-error'

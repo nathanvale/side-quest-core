@@ -15,9 +15,9 @@
  * @module core/git/guard
  */
 
-import fs from "node:fs";
-import { pathExistsSync } from "../fs/index.js";
-import { spawnAndCollect } from "../spawn/index.js";
+import fs from 'node:fs'
+import { pathExistsSync } from '../fs/index.js'
+import { spawnAndCollect } from '../spawn/index.js'
 
 /**
  * Options for git guard checks.
@@ -26,7 +26,7 @@ export interface GitGuardOptions {
 	/**
 	 * Directory to check (usually a git repository root or subdirectory).
 	 */
-	dir: string;
+	dir: string
 
 	/**
 	 * Set of folder names to check for uncommitted changes.
@@ -35,27 +35,27 @@ export interface GitGuardOptions {
 	 *
 	 * @example ["01 Projects", "02 Areas", "03 Resources"]
 	 */
-	managedFolders?: Set<string>;
+	managedFolders?: Set<string>
 
 	/**
 	 * If true, check all file types. If false (default), only check .md files.
 	 * @default false
 	 */
-	checkAllFileTypes?: boolean;
+	checkAllFileTypes?: boolean
 
 	/**
 	 * Optional logger for instrumentation.
 	 */
-	logger?: GitGuardLogger;
+	logger?: GitGuardLogger
 }
 
 /**
  * Logger interface for git guard operations.
  */
 export interface GitGuardLogger {
-	debug?(message: string, context?: Record<string, unknown>): void;
-	info?(message: string, context?: Record<string, unknown>): void;
-	error?(message: string, context?: Record<string, unknown>): void;
+	debug?(message: string, context?: Record<string, unknown>): void
+	info?(message: string, context?: Record<string, unknown>): void
+	error?(message: string, context?: Record<string, unknown>): void
 }
 
 /**
@@ -76,55 +76,55 @@ export interface GitGuardLogger {
  * ```
  */
 export function unescapeGitPath(gitPath: string): string {
-	const bytes: number[] = [];
-	let i = 0;
+	const bytes: number[] = []
+	let i = 0
 
 	while (i < gitPath.length) {
-		if (gitPath[i] === "\\" && i + 1 < gitPath.length) {
-			const nextChar = gitPath[i + 1];
+		if (gitPath[i] === '\\' && i + 1 < gitPath.length) {
+			const nextChar = gitPath[i + 1]
 
 			// Check for octal escape \ooo (3 octal digits)
 			if (i + 3 < gitPath.length) {
-				const nextThree = gitPath.substring(i + 1, i + 4);
+				const nextThree = gitPath.substring(i + 1, i + 4)
 				if (/^[0-7]{3}$/.test(nextThree)) {
-					bytes.push(Number.parseInt(nextThree, 8));
-					i += 4;
-					continue;
+					bytes.push(Number.parseInt(nextThree, 8))
+					i += 4
+					continue
 				}
 			}
 
 			// Check for single-char escapes
 			switch (nextChar) {
-				case "n":
-					bytes.push(10);
-					i += 2;
-					continue;
-				case "t":
-					bytes.push(9);
-					i += 2;
-					continue;
-				case "r":
-					bytes.push(13);
-					i += 2;
-					continue;
-				case "\\":
-					bytes.push(92);
-					i += 2;
-					continue;
+				case 'n':
+					bytes.push(10)
+					i += 2
+					continue
+				case 't':
+					bytes.push(9)
+					i += 2
+					continue
+				case 'r':
+					bytes.push(13)
+					i += 2
+					continue
+				case '\\':
+					bytes.push(92)
+					i += 2
+					continue
 				case '"':
-					bytes.push(34);
-					i += 2;
-					continue;
+					bytes.push(34)
+					i += 2
+					continue
 			}
 		}
 
 		// Regular ASCII character - add its char code
-		bytes.push(gitPath.charCodeAt(i));
-		i++;
+		bytes.push(gitPath.charCodeAt(i))
+		i++
 	}
 
 	// Decode UTF-8 bytes to string
-	return new TextDecoder("utf-8").decode(new Uint8Array(bytes));
+	return new TextDecoder('utf-8').decode(new Uint8Array(bytes))
 }
 
 /**
@@ -135,11 +135,11 @@ export function unescapeGitPath(gitPath: string): string {
  */
 async function getGitRootForDir(dir: string): Promise<string | null> {
 	const { stdout, exitCode } = await spawnAndCollect(
-		["git", "rev-parse", "--show-toplevel"],
+		['git', 'rev-parse', '--show-toplevel'],
 		{ cwd: dir },
-	);
-	if (exitCode !== 0) return null;
-	return stdout.trim() || null;
+	)
+	if (exitCode !== 0) return null
+	return stdout.trim() || null
 }
 
 /**
@@ -158,17 +158,17 @@ async function getGitRootForDir(dir: string): Promise<string | null> {
  * ```
  */
 export async function assertGitRepo(dir: string): Promise<void> {
-	const root = await getGitRootForDir(dir);
+	const root = await getGitRootForDir(dir)
 	if (!root) {
-		throw new Error("Directory must be inside a git repository.");
+		throw new Error('Directory must be inside a git repository.')
 	}
 
 	// Verify the directory is actually under the git root (handles symlinks)
 	// Use realpathSync to resolve symlinks (e.g., /var -> /private/var on macOS)
-	const realRoot = pathExistsSync(root) ? fs.realpathSync(root) : root;
-	const realDir = pathExistsSync(dir) ? fs.realpathSync(dir) : dir;
+	const realRoot = pathExistsSync(root) ? fs.realpathSync(root) : root
+	const realDir = pathExistsSync(dir) ? fs.realpathSync(dir) : dir
 	if (!realDir.startsWith(realRoot)) {
-		throw new Error("Directory must be inside a git repository.");
+		throw new Error('Directory must be inside a git repository.')
 	}
 }
 
@@ -184,11 +184,11 @@ function isInManagedFolder(
 	managedFolders: Set<string>,
 ): boolean {
 	// Get the top-level folder from the path
-	const parts = filePath.split("/");
-	if (parts.length < 2) return false; // File at root level, not managed
+	const parts = filePath.split('/')
+	if (parts.length < 2) return false // File at root level, not managed
 
-	const topFolder = parts[0];
-	return managedFolders.has(topFolder ?? "");
+	const topFolder = parts[0]
+	return managedFolders.has(topFolder ?? '')
 }
 
 /**
@@ -198,18 +198,18 @@ export interface GetUncommittedFilesOptions {
 	/**
 	 * Directory to check.
 	 */
-	dir: string;
+	dir: string
 
 	/**
 	 * If true, return all file types. If false (default), return only .md files.
 	 * @default false
 	 */
-	allFileTypes?: boolean;
+	allFileTypes?: boolean
 
 	/**
 	 * Optional logger for instrumentation.
 	 */
-	logger?: GitGuardLogger;
+	logger?: GitGuardLogger
 }
 
 /**
@@ -238,55 +238,55 @@ export interface GetUncommittedFilesOptions {
 export async function getUncommittedFiles(
 	options: GetUncommittedFilesOptions,
 ): Promise<string[]> {
-	const { dir, allFileTypes = false, logger } = options;
+	const { dir, allFileTypes = false, logger } = options
 
-	logger?.debug?.("git:getUncommittedFiles:start", { dir, allFileTypes });
+	logger?.debug?.('git:getUncommittedFiles:start', { dir, allFileTypes })
 
 	const { stdout, exitCode } = await spawnAndCollect(
-		["git", "status", "--porcelain", "-uall"],
+		['git', 'status', '--porcelain', '-uall'],
 		{ cwd: dir },
-	);
+	)
 
 	if (exitCode !== 0) {
-		const error = new Error("git status failed");
-		logger?.error?.("git:getUncommittedFiles:error", { error: error.message });
-		throw error;
+		const error = new Error('git status failed')
+		logger?.error?.('git:getUncommittedFiles:error', { error: error.message })
+		throw error
 	}
 
 	// Split first, then filter empty lines
 	// Important: Don't trim() the whole stdout as it strips leading spaces
 	// from git status format (e.g., " M file.md" becomes "M file.md")
-	const lines = stdout.split("\n").filter((line) => line.length > 0);
-	const files: string[] = [];
+	const lines = stdout.split('\n').filter((line) => line.length > 0)
+	const files: string[] = []
 
 	for (const line of lines) {
 		// Porcelain format: XY PATH (2 status chars + 1 space + path)
 		// X = index status, Y = working tree status
 		// Status codes: M (modified), A (added), ?? (untracked), etc.
-		const match = line.match(/^.{2}\s(.+)$/);
-		let filePath = match?.[1];
+		const match = line.match(/^.{2}\s(.+)$/)
+		let filePath = match?.[1]
 
 		// Git quotes filenames containing spaces or special chars, e.g. "Note 1.md"
 		// It also escapes non-ASCII UTF-8 bytes as octal sequences, e.g. \360\237\247\276 for 🧾
 		// Strip surrounding quotes and decode escape sequences
 		if (filePath?.startsWith('"') && filePath.endsWith('"')) {
-			filePath = filePath.slice(1, -1);
-			filePath = unescapeGitPath(filePath);
+			filePath = filePath.slice(1, -1)
+			filePath = unescapeGitPath(filePath)
 		}
 
-		if (!filePath) continue;
+		if (!filePath) continue
 
 		// Filter by file type if not including all
-		if (allFileTypes || filePath.endsWith(".md")) {
-			files.push(filePath);
+		if (allFileTypes || filePath.endsWith('.md')) {
+			files.push(filePath)
 		}
 	}
 
-	logger?.debug?.("git:getUncommittedFiles:complete", {
+	logger?.debug?.('git:getUncommittedFiles:complete', {
 		filesFound: files.length,
-	});
+	})
 
-	return files;
+	return files
 }
 
 /**
@@ -324,43 +324,43 @@ export async function ensureGitGuard(options: GitGuardOptions): Promise<void> {
 		managedFolders = new Set(),
 		checkAllFileTypes = false,
 		logger,
-	} = options;
+	} = options
 
-	logger?.info?.("git:ensureGitGuard:start", {
+	logger?.info?.('git:ensureGitGuard:start', {
 		dir,
 		checkAllFileTypes,
 		folderCount: managedFolders.size,
-	});
+	})
 
 	// Check that directory is in a git repo
-	await assertGitRepo(dir);
+	await assertGitRepo(dir)
 
 	// Get all uncommitted files
 	const allUncommitted = await getUncommittedFiles({
 		dir,
 		allFileTypes: checkAllFileTypes,
 		logger,
-	});
+	})
 
 	// Filter to managed folders if specified
 	const uncommitted =
 		managedFolders.size > 0
 			? allUncommitted.filter((file) => isInManagedFolder(file, managedFolders))
-			: allUncommitted;
+			: allUncommitted
 
 	if (uncommitted.length > 0) {
-		const fileList = `\nUncommitted files:\n${uncommitted.map((f: string) => `  - ${f}`).join("\n")}`;
+		const fileList = `\nUncommitted files:\n${uncommitted.map((f: string) => `  - ${f}`).join('\n')}`
 		const error = new Error(
 			`Directory has uncommitted changes. Commit before proceeding.${fileList}`,
-		);
-		logger?.error?.("git:ensureGitGuard:error", {
+		)
+		logger?.error?.('git:ensureGitGuard:error', {
 			error: error.message,
 			uncommittedCount: uncommitted.length,
-		});
-		throw error;
+		})
+		throw error
 	}
 
-	logger?.info?.("git:ensureGitGuard:complete", { clean: true });
+	logger?.info?.('git:ensureGitGuard:complete', { clean: true })
 }
 
 /**
@@ -383,23 +383,23 @@ export async function gitStatus(
 	dir: string,
 	logger?: GitGuardLogger,
 ): Promise<{ clean: boolean }> {
-	logger?.debug?.("git:getRepoStatus:start", { dir });
+	logger?.debug?.('git:getRepoStatus:start', { dir })
 
 	const { stdout, exitCode } = await spawnAndCollect(
-		["git", "status", "--porcelain"],
+		['git', 'status', '--porcelain'],
 		{ cwd: dir },
-	);
+	)
 
 	if (exitCode !== 0) {
-		const error = new Error("git status failed");
-		logger?.error?.("git:getRepoStatus:error", { error: error.message });
-		throw error;
+		const error = new Error('git status failed')
+		logger?.error?.('git:getRepoStatus:error', { error: error.message })
+		throw error
 	}
 
-	const output = stdout.trim();
-	const clean = output.length === 0;
+	const output = stdout.trim()
+	const clean = output.length === 0
 
-	logger?.debug?.("git:getRepoStatus:complete", { clean });
+	logger?.debug?.('git:getRepoStatus:complete', { clean })
 
-	return { clean };
+	return { clean }
 }

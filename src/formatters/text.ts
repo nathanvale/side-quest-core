@@ -22,16 +22,16 @@
  * @returns Text with consecutive duplicates removed
  */
 export function dedupeConsecutiveLines(text: string): string {
-	const lines = text.split("\n");
-	const deduped: string[] = [];
+	const lines = text.split('\n')
+	const deduped: string[] = []
 
 	for (const line of lines) {
-		const trimmed = line.trim();
+		const trimmed = line.trim()
 		// Skip empty lines and consecutive duplicates
 		if (trimmed && deduped[deduped.length - 1] !== trimmed) {
-			deduped.push(trimmed);
+			deduped.push(trimmed)
 		}
 	}
 
-	return deduped.join("\n");
+	return deduped.join('\n')
 }

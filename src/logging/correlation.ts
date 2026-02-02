@@ -22,5 +22,5 @@
  * ```
  */
 export function createCorrelationId(): string {
-	return crypto.randomUUID().slice(0, 8);
+	return crypto.randomUUID().slice(0, 8)
 }

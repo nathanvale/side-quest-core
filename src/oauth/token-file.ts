@@ -5,9 +5,9 @@
  * Uses temp file → rename pattern to prevent corruption.
  */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-import type { OAuthCredentials, OAuthToken } from "./types.ts";
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import type { OAuthCredentials, OAuthToken } from './types.ts'
 
 /**
  * Loads an OAuth token from disk.
@@ -28,14 +28,14 @@ import type { OAuthCredentials, OAuthToken } from "./types.ts";
  */
 export function loadTokenFile(tokenPath: string): OAuthToken | null {
 	if (!fs.existsSync(tokenPath)) {
-		return null;
+		return null
 	}
 
 	try {
-		const content = fs.readFileSync(tokenPath, "utf8");
-		return JSON.parse(content) as OAuthToken;
+		const content = fs.readFileSync(tokenPath, 'utf8')
+		return JSON.parse(content) as OAuthToken
 	} catch {
-		return null;
+		return null
 	}
 }
 
@@ -63,19 +63,19 @@ export function loadTokenFile(tokenPath: string): OAuthToken | null {
  * ```
  */
 export function saveTokenFile(tokenPath: string, token: OAuthToken): void {
-	const dir = path.dirname(tokenPath);
+	const dir = path.dirname(tokenPath)
 
 	// Ensure directory exists with secure permissions
 	if (!fs.existsSync(dir)) {
-		fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+		fs.mkdirSync(dir, { recursive: true, mode: 0o700 })
 	}
 
 	// Atomic write: temp file → rename
-	const tempPath = `${tokenPath}.tmp`;
+	const tempPath = `${tokenPath}.tmp`
 	fs.writeFileSync(tempPath, JSON.stringify(token, null, 2), {
 		mode: 0o600, // Security: owner read/write only
-	});
-	fs.renameSync(tempPath, tokenPath);
+	})
+	fs.renameSync(tempPath, tokenPath)
 }
 
 /**
@@ -102,8 +102,8 @@ export function isTokenExpired(
 	token: OAuthToken,
 	bufferMs: number = 5 * 60 * 1000, // 5 minutes default
 ): boolean {
-	const now = Date.now();
-	return token.expiry_date <= now + bufferMs;
+	const now = Date.now()
+	return token.expiry_date <= now + bufferMs
 }
 
 /**
@@ -130,36 +130,36 @@ export function isTokenExpired(
 export function validateOAuthCredentials(
 	credentials: unknown,
 	requiredFields: string[] = [
-		"client_id",
-		"client_secret",
-		"redirect_uris",
-		"auth_uri",
-		"token_uri",
+		'client_id',
+		'client_secret',
+		'redirect_uris',
+		'auth_uri',
+		'token_uri',
 	],
 ): asserts credentials is OAuthCredentials {
-	if (!credentials || typeof credentials !== "object") {
-		throw new Error("Credentials must be an object");
+	if (!credentials || typeof credentials !== 'object') {
+		throw new Error('Credentials must be an object')
 	}
 
-	const creds = credentials as Record<string, unknown>;
+	const creds = credentials as Record<string, unknown>
 
 	// Validate required fields exist
 	for (const field of requiredFields) {
 		if (!(field in creds)) {
-			throw new Error(`Missing required field: ${field}`);
+			throw new Error(`Missing required field: ${field}`)
 		}
 	}
 
 	// Validate redirect_uris is an array
-	if ("redirect_uris" in creds && !Array.isArray(creds.redirect_uris)) {
-		throw new Error("redirect_uris must be an array");
+	if ('redirect_uris' in creds && !Array.isArray(creds.redirect_uris)) {
+		throw new Error('redirect_uris must be an array')
 	}
 
 	// Validate string fields
-	const stringFields = ["client_id", "client_secret", "auth_uri", "token_uri"];
+	const stringFields = ['client_id', 'client_secret', 'auth_uri', 'token_uri']
 	for (const field of stringFields) {
-		if (field in creds && typeof creds[field] !== "string") {
-			throw new Error(`${field} must be a string`);
+		if (field in creds && typeof creds[field] !== 'string') {
+			throw new Error(`${field} must be a string`)
 		}
 	}
 }

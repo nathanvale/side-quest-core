@@ -16,15 +16,15 @@ export {
 	validateClassifierId,
 	validateFieldName,
 	validateTemplateName,
-} from "./identifiers.ts";
-export { validateAreaName, validateDisplayName } from "./names.ts";
+} from './identifiers.ts'
+export { validateAreaName, validateDisplayName } from './names.ts'
 export {
 	type ValidateIntegerOptions,
 	validateInteger,
 	validatePriority,
 	validateWeight,
-} from "./numbers.ts";
-export { validatePath, validatePathOrDefault } from "./paths.ts";
+} from './numbers.ts'
+export { validatePath, validatePathOrDefault } from './paths.ts'
 export {
 	isRegexSafe,
 	isValidGlob,
@@ -33,4 +33,4 @@ export {
 	validateGlob,
 	validateRegex,
 	validateShellSafePattern,
-} from "./patterns.ts";
+} from './patterns.ts'

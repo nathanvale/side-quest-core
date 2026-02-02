@@ -5,7 +5,7 @@
  * Extracted from kit plugin to eliminate duplication.
  */
 
-import { existsSync, statSync } from "node:fs";
+import { existsSync, statSync } from 'node:fs'
 
 /**
  * Get the age of a file in hours.
@@ -26,15 +26,15 @@ import { existsSync, statSync } from "node:fs";
  */
 export function getFileAgeHours(filePath: string): number | null {
 	if (!existsSync(filePath)) {
-		return null;
+		return null
 	}
 
 	try {
-		const stats = statSync(filePath);
-		const ageMs = Date.now() - stats.mtimeMs;
-		return ageMs / (1000 * 60 * 60); // Convert to hours
+		const stats = statSync(filePath)
+		const ageMs = Date.now() - stats.mtimeMs
+		return ageMs / (1000 * 60 * 60) // Convert to hours
 	} catch {
-		return null;
+		return null
 	}
 }
 
@@ -56,15 +56,15 @@ export function getFileAgeHours(filePath: string): number | null {
  */
 export function getFileSizeMB(filePath: string): string | null {
 	if (!existsSync(filePath)) {
-		return null;
+		return null
 	}
 
 	try {
-		const stats = statSync(filePath);
-		const mb = stats.size / (1024 * 1024);
-		return mb.toFixed(2);
+		const stats = statSync(filePath)
+		const mb = stats.size / (1024 * 1024)
+		return mb.toFixed(2)
 	} catch {
-		return null;
+		return null
 	}
 }
 
@@ -86,7 +86,7 @@ export function getFileSizeMB(filePath: string): string | null {
  * ```
  */
 export function isFileStale(filePath: string, maxAgeHours: number): boolean {
-	const age = getFileAgeHours(filePath);
+	const age = getFileAgeHours(filePath)
 	// File doesn't exist or is older than threshold
-	return age === null || age > maxAgeHours;
+	return age === null || age > maxAgeHours
 }

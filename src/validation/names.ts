@@ -30,24 +30,24 @@
  * ```
  */
 export function validateAreaName(area: string): string {
-	const trimmed = area.trim();
+	const trimmed = area.trim()
 
 	if (trimmed.length === 0) {
-		throw new Error("Area name cannot be empty");
+		throw new Error('Area name cannot be empty')
 	}
 
 	if (trimmed.length > 100) {
 		throw new Error(
 			`Area name too long (max 100 chars, got: ${trimmed.length})`,
-		);
+		)
 	}
 
 	// Allow letters, numbers, spaces, hyphens, underscores
 	if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed)) {
-		throw new Error(`Invalid area name: ${area}`);
+		throw new Error(`Invalid area name: ${area}`)
 	}
 
-	return trimmed;
+	return trimmed
 }
 
 /**
@@ -71,17 +71,17 @@ export function validateAreaName(area: string): string {
  * ```
  */
 export function validateDisplayName(displayName: string): string {
-	const trimmed = displayName.trim();
+	const trimmed = displayName.trim()
 
 	if (trimmed.length === 0) {
-		throw new Error("Display name cannot be empty");
+		throw new Error('Display name cannot be empty')
 	}
 
 	if (trimmed.length > 100) {
 		throw new Error(
 			`Display name too long (max 100 chars, got: ${trimmed.length})`,
-		);
+		)
 	}
 
-	return trimmed;
+	return trimmed
 }

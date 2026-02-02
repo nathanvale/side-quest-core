@@ -3,9 +3,9 @@
  * Provides git-aware file tracking and change detection.
  */
 
-import { realpath } from "node:fs/promises";
-import { resolve } from "node:path";
-import { spawnAndCollect } from "../spawn/index.js";
+import { realpath } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { spawnAndCollect } from '../spawn/index.js'
 
 // Re-export guard utilities
 export {
@@ -16,9 +16,9 @@ export {
 	type GitGuardOptions,
 	getUncommittedFiles,
 	gitStatus,
-} from "./guard.js";
+} from './guard.js'
 // Re-export path utilities
-export { unescapeGitPath } from "./paths.js";
+export { unescapeGitPath } from './paths.js'
 
 /**
  * Get the root directory of the current git repository.
@@ -30,13 +30,13 @@ export { unescapeGitPath } from "./paths.js";
  */
 export async function getGitRoot(): Promise<string | null> {
 	const { stdout, exitCode } = await spawnAndCollect([
-		"git",
-		"rev-parse",
-		"--show-toplevel",
-	]);
+		'git',
+		'rev-parse',
+		'--show-toplevel',
+	])
 
-	if (exitCode !== 0) return null;
-	return stdout.trim() || null;
+	if (exitCode !== 0) return null
+	return stdout.trim() || null
 }
 
 /**
@@ -53,19 +53,19 @@ export async function getGitRoot(): Promise<string | null> {
  * @returns true if file is inside the git repo, false otherwise
  */
 export async function isFileInRepo(filePath: string): Promise<boolean> {
-	const gitRoot = await getGitRoot();
-	if (!gitRoot) return false;
+	const gitRoot = await getGitRoot()
+	if (!gitRoot) return false
 
 	// Resolve symlinks to handle /tmp → /private/tmp on macOS
 	try {
-		const realGitRoot = await realpath(gitRoot);
-		const absolutePath = resolve(filePath);
-		const realAbsolutePath = await realpath(absolutePath);
-		return realAbsolutePath.startsWith(realGitRoot);
+		const realGitRoot = await realpath(gitRoot)
+		const absolutePath = resolve(filePath)
+		const realAbsolutePath = await realpath(absolutePath)
+		return realAbsolutePath.startsWith(realGitRoot)
 	} catch {
 		// If realpath fails (file doesn't exist), fall back to string comparison
-		const absolutePath = resolve(filePath);
-		return absolutePath.startsWith(gitRoot);
+		const absolutePath = resolve(filePath)
+		return absolutePath.startsWith(gitRoot)
 	}
 }
 
@@ -88,38 +88,38 @@ export async function getChangedFiles(
 ): Promise<string[]> {
 	// Run all three git commands in parallel for efficiency
 	const [stagedResult, modifiedResult, untrackedResult] = await Promise.all([
-		spawnAndCollect(["git", "diff", "--cached", "--name-only"]),
-		spawnAndCollect(["git", "diff", "--name-only"]),
-		spawnAndCollect(["git", "ls-files", "--others", "--exclude-standard"]),
-	]);
+		spawnAndCollect(['git', 'diff', '--cached', '--name-only']),
+		spawnAndCollect(['git', 'diff', '--name-only']),
+		spawnAndCollect(['git', 'ls-files', '--others', '--exclude-standard']),
+	])
 
-	const files = new Set<string>();
+	const files = new Set<string>()
 
 	// Collect staged files
-	for (const file of stagedResult.stdout.trim().split("\n")) {
-		if (file) files.add(file);
+	for (const file of stagedResult.stdout.trim().split('\n')) {
+		if (file) files.add(file)
 	}
 
 	// Collect unstaged modified files
-	for (const file of modifiedResult.stdout.trim().split("\n")) {
-		if (file) files.add(file);
+	for (const file of modifiedResult.stdout.trim().split('\n')) {
+		if (file) files.add(file)
 	}
 
 	// Collect untracked files
-	for (const file of untrackedResult.stdout.trim().split("\n")) {
-		if (file) files.add(file);
+	for (const file of untrackedResult.stdout.trim().split('\n')) {
+		if (file) files.add(file)
 	}
 
-	const allFiles = Array.from(files);
+	const allFiles = Array.from(files)
 
 	// Filter by extensions if provided
 	if (extensions && extensions.length > 0) {
 		return allFiles.filter((file) =>
 			extensions.some((ext) => file.endsWith(ext)),
-		);
+		)
 	}
 
-	return allFiles;
+	return allFiles
 }
 
 /**
@@ -133,8 +133,8 @@ export async function getChangedFiles(
  * @returns true if any matching files have changed
  */
 export async function hasChangedFiles(extensions: string[]): Promise<boolean> {
-	const changedFiles = await getChangedFiles(extensions);
-	return changedFiles.length > 0;
+	const changedFiles = await getChangedFiles(extensions)
+	return changedFiles.length > 0
 }
 
 // ============================================================================
@@ -163,17 +163,17 @@ export async function hasChangedFiles(extensions: string[]): Promise<boolean> {
  * ```
  */
 export async function isWorkspaceProject(rootPath?: string): Promise<boolean> {
-	const { existsSync, readFileSync } = await import("node:fs");
-	const { join } = await import("node:path");
+	const { existsSync, readFileSync } = await import('node:fs')
+	const { join } = await import('node:path')
 
-	const pkgPath = join(rootPath ?? process.cwd(), "package.json");
-	if (!existsSync(pkgPath)) return false;
+	const pkgPath = join(rootPath ?? process.cwd(), 'package.json')
+	if (!existsSync(pkgPath)) return false
 
 	try {
-		const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-		return Array.isArray(pkg.workspaces) && pkg.workspaces.length > 0;
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+		return Array.isArray(pkg.workspaces) && pkg.workspaces.length > 0
 	} catch {
-		return false;
+		return false
 	}
 }
 
@@ -192,19 +192,19 @@ export async function isWorkspaceProject(rootPath?: string): Promise<boolean> {
 export async function getWorkspacePackages(
 	rootPath?: string,
 ): Promise<string[]> {
-	const { existsSync, readFileSync } = await import("node:fs");
-	const { join } = await import("node:path");
+	const { existsSync, readFileSync } = await import('node:fs')
+	const { join } = await import('node:path')
 
-	const pkgPath = join(rootPath ?? process.cwd(), "package.json");
-	if (!existsSync(pkgPath)) return [];
+	const pkgPath = join(rootPath ?? process.cwd(), 'package.json')
+	if (!existsSync(pkgPath)) return []
 
 	try {
-		const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
 		if (Array.isArray(pkg.workspaces)) {
-			return pkg.workspaces;
+			return pkg.workspaces
 		}
-		return [];
+		return []
 	} catch {
-		return [];
+		return []
 	}
 }

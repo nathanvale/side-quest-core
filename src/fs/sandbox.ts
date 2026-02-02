@@ -9,7 +9,7 @@
  * @module fs/sandbox
  */
 
-import path from "node:path";
+import path from 'node:path'
 
 /**
  * Represents a resolved path within a sandbox root directory.
@@ -17,9 +17,9 @@ import path from "node:path";
  */
 export interface SandboxedPath {
 	/** Absolute filesystem path. */
-	readonly absolute: string;
+	readonly absolute: string
 	/** Path relative to sandbox root (e.g., "Projects/Note.md" or "." for root). */
-	readonly relative: string;
+	readonly relative: string
 }
 
 /**
@@ -31,9 +31,9 @@ export interface SandboxedPath {
  * @returns true if child is within parent (or equal to parent)
  */
 function isSubPath(parent: string, child: string): boolean {
-	const rel = path.relative(parent, child);
+	const rel = path.relative(parent, child)
 	// Valid subpath: non-empty, doesn't start with "..", and isn't absolute
-	return !!rel && !rel.startsWith("..") && !path.isAbsolute(rel);
+	return !!rel && !rel.startsWith('..') && !path.isAbsolute(rel)
 }
 
 /**
@@ -69,15 +69,15 @@ function isSubPath(parent: string, child: string): boolean {
  */
 export function resolveSandboxedPath(
 	root: string,
-	inputPath = ".",
+	inputPath = '.',
 ): SandboxedPath {
-	const absolute = path.resolve(root, inputPath);
+	const absolute = path.resolve(root, inputPath)
 	// Allow exact root match OR valid subpath
 	if (!isSubPath(root, absolute) && path.resolve(root) !== absolute) {
-		throw new Error(`Path escapes sandbox: ${inputPath}`);
+		throw new Error(`Path escapes sandbox: ${inputPath}`)
 	}
-	const relative = path.relative(root, absolute);
-	return { absolute, relative: relative || "." };
+	const relative = path.relative(root, absolute)
+	return { absolute, relative: relative || '.' }
 }
 
 /**
@@ -125,34 +125,34 @@ export function validateConfigPath(
 ): boolean {
 	// Canonicalize the path first to resolve any tricks like //etc/passwd
 	// This normalizes slashes, resolves symlinks, and makes absolute
-	const resolved = path.resolve(configPath);
-	const home = process.env.HOME ?? process.env.USERPROFILE ?? "";
-	const cwd = process.cwd();
+	const resolved = path.resolve(configPath)
+	const home = process.env.HOME ?? process.env.USERPROFILE ?? ''
+	const cwd = process.cwd()
 
 	// Check for path traversal sequences in the original path
 	// This catches patterns like ../ before resolution
-	if (configPath.includes("..")) {
-		return false;
+	if (configPath.includes('..')) {
+		return false
 	}
 
 	// Allow paths within home config directory
-	if (home && resolved.startsWith(path.join(home, ".config"))) {
-		return true;
+	if (home && resolved.startsWith(path.join(home, '.config'))) {
+		return true
 	}
 
 	// Allow paths within current working directory
 	if (resolved.startsWith(cwd)) {
-		return true;
+		return true
 	}
 
 	// Allow paths within custom allowed roots
 	for (const allowedRoot of allowedRoots) {
 		if (resolved.startsWith(path.resolve(allowedRoot))) {
-			return true;
+			return true
 		}
 	}
 
-	return false;
+	return false
 }
 
 /**
@@ -186,6 +186,6 @@ export function validateConfigPath(
 export function validateFilenameForSubprocess(filename: string): void {
 	// Allow alphanumeric, underscore, hyphen, dot, space
 	if (!/^[a-zA-Z0-9_\-. ]+$/.test(filename)) {
-		throw new Error(`Invalid characters in filename: ${filename}`);
+		throw new Error(`Invalid characters in filename: ${filename}`)
 	}
 }

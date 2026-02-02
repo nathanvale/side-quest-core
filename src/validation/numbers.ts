@@ -7,7 +7,7 @@
  * @module validation/numbers
  */
 
-import type { ValidationResult } from "./patterns.ts";
+import type { ValidationResult } from './patterns.ts'
 
 /**
  * Validate priority value (0-100 integer).
@@ -31,9 +31,9 @@ import type { ValidationResult } from "./patterns.ts";
  */
 export function validatePriority(priority: number): number {
 	if (!Number.isInteger(priority) || priority < 0 || priority > 100) {
-		throw new Error(`Priority must be 0-100 (got: ${priority})`);
+		throw new Error(`Priority must be 0-100 (got: ${priority})`)
 	}
-	return priority;
+	return priority
 }
 
 /**
@@ -59,9 +59,9 @@ export function validatePriority(priority: number): number {
  */
 export function validateWeight(weight: number): number {
 	if (Number.isNaN(weight) || weight < 0 || weight > 1) {
-		throw new Error(`Weight must be 0.0 to 1.0 (got: ${weight})`);
+		throw new Error(`Weight must be 0.0 to 1.0 (got: ${weight})`)
 	}
-	return weight;
+	return weight
 }
 
 /**
@@ -69,15 +69,15 @@ export function validateWeight(weight: number): number {
  */
 export interface ValidateIntegerOptions {
 	/** Field name for error messages */
-	name: string;
+	name: string
 	/** Minimum allowed value (default: Number.MIN_SAFE_INTEGER) */
-	min?: number;
+	min?: number
 	/** Maximum allowed value (default: Number.MAX_SAFE_INTEGER) */
-	max?: number;
+	max?: number
 	/** Default value if input is undefined/null */
-	defaultValue?: number;
+	defaultValue?: number
 	/** Whether to allow string input that parses to integer (default: true) */
-	allowStringInput?: boolean;
+	allowStringInput?: boolean
 }
 
 /**
@@ -128,36 +128,36 @@ export function validateInteger(
 		max = Number.MAX_SAFE_INTEGER,
 		defaultValue,
 		allowStringInput = true,
-	} = options;
+	} = options
 
 	// Handle undefined/null with default
 	if (value === undefined || value === null) {
 		if (defaultValue !== undefined) {
-			return { valid: true, value: defaultValue };
+			return { valid: true, value: defaultValue }
 		}
-		return { valid: false, error: `${name} is required` };
+		return { valid: false, error: `${name} is required` }
 	}
 
 	// Convert string to number if allowed
-	let num: unknown = value;
-	if (allowStringInput && typeof value === "string") {
-		num = Number.parseInt(value, 10);
+	let num: unknown = value
+	if (allowStringInput && typeof value === 'string') {
+		num = Number.parseInt(value, 10)
 	}
 
 	// Type check
-	if (typeof num !== "number" || Number.isNaN(num)) {
-		return { valid: false, error: `${name} must be a number` };
+	if (typeof num !== 'number' || Number.isNaN(num)) {
+		return { valid: false, error: `${name} must be a number` }
 	}
 
 	// Integer check
 	if (!Number.isInteger(num)) {
-		return { valid: false, error: `${name} must be an integer` };
+		return { valid: false, error: `${name} must be an integer` }
 	}
 
 	// Range check
 	if (num < min || num > max) {
-		return { valid: false, error: `${name} must be between ${min} and ${max}` };
+		return { valid: false, error: `${name} must be between ${min} and ${max}` }
 	}
 
-	return { valid: true, value: num };
+	return { valid: true, value: num }
 }

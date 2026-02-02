@@ -13,8 +13,8 @@
  * @module validation/paths
  */
 
-import { resolve } from "node:path";
-import { isFileInRepo } from "../git/index.js";
+import { resolve } from 'node:path'
+import { isFileInRepo } from '../git/index.js'
 
 /**
  * Validate that a path is within the git repository.
@@ -50,14 +50,14 @@ import { isFileInRepo } from "../git/index.js";
  * ```
  */
 export async function validatePath(inputPath: string): Promise<string> {
-	const resolvedPath = resolve(inputPath);
-	const inRepo = await isFileInRepo(resolvedPath);
+	const resolvedPath = resolve(inputPath)
+	const inRepo = await isFileInRepo(resolvedPath)
 
 	if (!inRepo) {
-		throw new Error(`Path outside repository: ${inputPath}`);
+		throw new Error(`Path outside repository: ${inputPath}`)
 	}
 
-	return resolvedPath;
+	return resolvedPath
 }
 
 /**
@@ -96,13 +96,13 @@ export async function validatePath(inputPath: string): Promise<string> {
  */
 export async function validatePathOrDefault(
 	path: string | undefined,
-	defaultPath = ".",
+	defaultPath = '.',
 ): Promise<string> {
 	// Default path is always safe - it's the current directory
 	// Also treat whitespace-only strings as empty
-	if (!path || path.trim() === "" || path === defaultPath) {
-		return defaultPath;
+	if (!path || path.trim() === '' || path === defaultPath) {
+		return defaultPath
 	}
 
-	return validatePath(path);
+	return validatePath(path)
 }

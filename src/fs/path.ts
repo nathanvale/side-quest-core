@@ -4,8 +4,8 @@
  * Extracted from plugins/kit/src/validators.ts to consolidate shared utilities.
  */
 
-import { homedir } from "node:os";
-import { isAbsolute, normalize, resolve } from "node:path";
+import { homedir } from 'node:os'
+import { isAbsolute, normalize, resolve } from 'node:path'
 
 /**
  * Expand tilde (~) in paths to the user's home directory.
@@ -25,13 +25,13 @@ import { isAbsolute, normalize, resolve } from "node:path";
  * expandTilde('relative/path') // => 'relative/path'
  */
 export function expandTilde(inputPath: string): string {
-	if (inputPath.startsWith("~/")) {
-		return inputPath.replace("~", homedir());
+	if (inputPath.startsWith('~/')) {
+		return inputPath.replace('~', homedir())
 	}
-	if (inputPath === "~") {
-		return homedir();
+	if (inputPath === '~') {
+		return homedir()
 	}
-	return inputPath;
+	return inputPath
 }
 
 /**
@@ -54,11 +54,11 @@ export function expandTilde(inputPath: string): string {
  * normalizePath('/a//b///c') // => '/a/b/c'
  */
 export function normalizePath(inputPath: string, basePath?: string): string {
-	const expanded = expandTilde(inputPath);
+	const expanded = expandTilde(inputPath)
 	const resolved = isAbsolute(expanded)
 		? expanded
-		: resolve(basePath ?? process.cwd(), expanded);
-	return normalize(resolved);
+		: resolve(basePath ?? process.cwd(), expanded)
+	return normalize(resolved)
 }
 
 /**
@@ -78,7 +78,7 @@ export function normalizePath(inputPath: string, basePath?: string): string {
  * normalizePathFragment('Projects//Alpha///') // => 'Projects//Alpha' (preserves internal slashes)
  */
 export function normalizePathFragment(input: string): string {
-	return input.replace(/\\/g, "/").replace(/\/+$/, "");
+	return input.replace(/\\/g, '/').replace(/\/+$/, '')
 }
 
 /**
@@ -106,13 +106,13 @@ export function matchesDir(
 	file: string,
 	dirs?: ReadonlyArray<string>,
 ): boolean {
-	if (!dirs || dirs.length === 0) return true;
-	const normalizedFile = normalizePathFragment(file);
+	if (!dirs || dirs.length === 0) return true
+	const normalizedFile = normalizePathFragment(file)
 	return dirs.some((dir) => {
-		const normalizedDir = normalizePathFragment(dir);
+		const normalizedDir = normalizePathFragment(dir)
 		return (
 			normalizedFile === normalizedDir ||
 			normalizedFile.startsWith(`${normalizedDir}/`)
-		);
-	});
+		)
+	})
 }

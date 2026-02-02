@@ -62,7 +62,7 @@ export class PluginError<TErrorType extends string> extends Error {
 	 *
 	 * @example "InvalidPath", "Timeout", "ConfigNotFound"
 	 */
-	public readonly type: TErrorType;
+	public readonly type: TErrorType
 
 	/**
 	 * User-friendly error message.
@@ -70,28 +70,28 @@ export class PluginError<TErrorType extends string> extends Error {
 	 * This is the message shown to users, separate from the internal
 	 * Error.message which may include additional details.
 	 */
-	public readonly userMessage: string;
+	public readonly userMessage: string
 
 	/**
 	 * Recovery hint with actionable guidance.
 	 *
 	 * @example "Install Kit with: uv tool install cased-kit"
 	 */
-	public readonly hint: string;
+	public readonly hint: string
 
 	/**
 	 * Optional additional details about the error.
 	 *
 	 * @example "/path/to/missing/file", "timeout after 30s"
 	 */
-	public readonly details?: string;
+	public readonly details?: string
 
 	/**
 	 * Optional stderr output from failed command.
 	 *
 	 * Useful for preserving raw error output from external tools.
 	 */
-	public readonly stderr?: string;
+	public readonly stderr?: string
 
 	/**
 	 * Create a new PluginError.
@@ -112,14 +112,14 @@ export class PluginError<TErrorType extends string> extends Error {
 		stderr?: string,
 	) {
 		// Only append details if non-empty string
-		const detailsStr = details && details.length > 0 ? `: ${details}` : "";
-		super(`${userMessage}${detailsStr}`);
-		this.name = name;
-		this.type = type;
-		this.userMessage = userMessage;
-		this.hint = hint;
-		this.details = details;
-		this.stderr = stderr;
+		const detailsStr = details && details.length > 0 ? `: ${details}` : ''
+		super(`${userMessage}${detailsStr}`)
+		this.name = name
+		this.type = type
+		this.userMessage = userMessage
+		this.hint = hint
+		this.details = details
+		this.stderr = stderr
 	}
 
 	/**
@@ -143,14 +143,14 @@ export class PluginError<TErrorType extends string> extends Error {
 	 * ```
 	 */
 	toUserMessage(): string {
-		const lines = [`Error: ${this.message}`, "", `Hint: ${this.hint}`];
+		const lines = [`Error: ${this.message}`, '', `Hint: ${this.hint}`]
 
 		// Only add Details section if stderr is non-empty
 		if (this.stderr && this.stderr.length > 0) {
-			lines.push("", "Details:", this.stderr);
+			lines.push('', 'Details:', this.stderr)
 		}
 
-		return lines.join("\n");
+		return lines.join('\n')
 	}
 
 	/**
@@ -174,16 +174,16 @@ export class PluginError<TErrorType extends string> extends Error {
 	 * ```
 	 */
 	toJSON(): {
-		error: string;
-		type: TErrorType;
-		hint: string;
-		details?: string;
+		error: string
+		type: TErrorType
+		hint: string
+		details?: string
 	} {
 		return {
 			error: this.message,
 			type: this.type,
 			hint: this.hint,
 			...(this.details && { details: this.details }),
-		};
+		}
 	}
 }

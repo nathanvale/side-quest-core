@@ -56,7 +56,7 @@ export interface ErrorPattern<TErrorType extends string> {
 	/**
 	 * The error type to return when this pattern matches.
 	 */
-	type: TErrorType;
+	type: TErrorType
 
 	/**
 	 * List of patterns to match against output.
@@ -64,7 +64,7 @@ export interface ErrorPattern<TErrorType extends string> {
 	 * - String patterns are matched case-insensitively
 	 * - RegExp patterns use their own flags
 	 */
-	patterns: (string | RegExp)[];
+	patterns: (string | RegExp)[]
 }
 
 /**
@@ -97,25 +97,25 @@ export function detectErrorFromOutput<TErrorType extends string>(
 	patterns: ErrorPattern<TErrorType>[],
 	defaultType: TErrorType,
 ): TErrorType {
-	const lowerOutput = output.toLowerCase();
+	const lowerOutput = output.toLowerCase()
 
 	for (const errorPattern of patterns) {
 		for (const pattern of errorPattern.patterns) {
-			if (typeof pattern === "string") {
+			if (typeof pattern === 'string') {
 				// String patterns: case-insensitive substring match
 				if (lowerOutput.includes(pattern.toLowerCase())) {
-					return errorPattern.type;
+					return errorPattern.type
 				}
 			} else {
 				// RegExp patterns: use pattern's own flags
 				if (pattern.test(output)) {
-					return errorPattern.type;
+					return errorPattern.type
 				}
 			}
 		}
 	}
 
-	return defaultType;
+	return defaultType
 }
 
 /**
@@ -137,12 +137,12 @@ export function detectErrorFromOutput<TErrorType extends string>(
  * ```
  */
 export function isTimeoutOutput(output: string): boolean {
-	const lowerOutput = output.toLowerCase();
+	const lowerOutput = output.toLowerCase()
 	return (
-		lowerOutput.includes("timeout") ||
-		lowerOutput.includes("timed out") ||
-		lowerOutput.includes("etimedout")
-	);
+		lowerOutput.includes('timeout') ||
+		lowerOutput.includes('timed out') ||
+		lowerOutput.includes('etimedout')
+	)
 }
 
 /**
@@ -165,11 +165,11 @@ export function isTimeoutOutput(output: string): boolean {
  * ```
  */
 export function isCommandNotFoundOutput(output: string): boolean {
-	const lowerOutput = output.toLowerCase();
+	const lowerOutput = output.toLowerCase()
 	return (
-		lowerOutput.includes("command not found") ||
-		lowerOutput.includes("not recognized") ||
-		lowerOutput.includes("no such file") ||
-		lowerOutput.includes("cannot find")
-	);
+		lowerOutput.includes('command not found') ||
+		lowerOutput.includes('not recognized') ||
+		lowerOutput.includes('no such file') ||
+		lowerOutput.includes('cannot find')
+	)
 }
