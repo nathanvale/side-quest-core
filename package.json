@@ -105,6 +105,10 @@
 			"types": "./dist/src/vtt/index.d.ts",
 			"import": "./dist/src/vtt/index.js"
 		},
+		"./mcp-response": {
+			"types": "./dist/src/mcp-response/index.d.ts",
+			"import": "./dist/src/mcp-response/index.js"
+		},
 		"./package.json": "./package.json"
 	},
 	"files": [
