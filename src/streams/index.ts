@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { streamToText, streamToJson, streamToBytes } from "@sidequest/core/streams";
+ * import { streamToText, streamToJson, streamToBytes } from "@side-quest/core/streams";
  *
  * const response = await fetch("https://api.example.com/data");
  * const text = await streamToText(response.body);
@@ -33,8 +33,8 @@
 export async function streamToText(
 	stream: ReadableStream<Uint8Array> | null,
 ): Promise<string> {
-	if (!stream) return "";
-	return Bun.readableStreamToText(stream);
+	if (!stream) return ''
+	return Bun.readableStreamToText(stream)
 }
 
 /**
@@ -52,8 +52,8 @@ export async function streamToText(
 export async function streamToJson<T = unknown>(
 	stream: ReadableStream<Uint8Array> | null,
 ): Promise<T> {
-	if (!stream) throw new Error("Stream is null");
-	return Bun.readableStreamToJSON(stream) as Promise<T>;
+	if (!stream) throw new Error('Stream is null')
+	return Bun.readableStreamToJSON(stream) as Promise<T>
 }
 
 /**
@@ -71,8 +71,8 @@ export async function streamToJson<T = unknown>(
 export async function streamToBytes(
 	stream: ReadableStream<Uint8Array> | null,
 ): Promise<Uint8Array> {
-	if (!stream) return new Uint8Array(0);
-	return Bun.readableStreamToBytes(stream);
+	if (!stream) return new Uint8Array(0)
+	return Bun.readableStreamToBytes(stream)
 }
 
 /**
@@ -84,8 +84,8 @@ export async function streamToBytes(
 export async function streamToArrayBuffer(
 	stream: ReadableStream<Uint8Array> | null,
 ): Promise<ArrayBuffer> {
-	if (!stream) return new ArrayBuffer(0);
-	return Bun.readableStreamToArrayBuffer(stream);
+	if (!stream) return new ArrayBuffer(0)
+	return Bun.readableStreamToArrayBuffer(stream)
 }
 
 /**
@@ -97,8 +97,8 @@ export async function streamToArrayBuffer(
 export async function streamToBlob(
 	stream: ReadableStream<Uint8Array> | null,
 ): Promise<Blob> {
-	if (!stream) return new Blob([]);
-	return Bun.readableStreamToBlob(stream);
+	if (!stream) return new Blob([])
+	return Bun.readableStreamToBlob(stream)
 }
 
 /**
@@ -110,8 +110,8 @@ export async function streamToBlob(
 export async function streamToArray<T = unknown>(
 	stream: ReadableStream<T> | null,
 ): Promise<T[]> {
-	if (!stream) return [];
-	return Bun.readableStreamToArray(stream);
+	if (!stream) return []
+	return Bun.readableStreamToArray(stream)
 }
 
 /**
@@ -125,11 +125,11 @@ export async function streamToFormData(
 	stream: ReadableStream<Uint8Array> | null,
 	boundary?: string,
 ): Promise<FormData> {
-	if (!stream) return new FormData();
+	if (!stream) return new FormData()
 	if (boundary) {
-		return Bun.readableStreamToFormData(stream, boundary);
+		return Bun.readableStreamToFormData(stream, boundary)
 	}
-	return Bun.readableStreamToFormData(stream);
+	return Bun.readableStreamToFormData(stream)
 }
 
 // ============================================================================
@@ -145,12 +145,12 @@ export async function streamToFormData(
  */
 export async function safeStreamToText(
 	stream: ReadableStream<Uint8Array> | null,
-	fallback = "",
+	fallback = '',
 ): Promise<string> {
 	try {
-		return await streamToText(stream);
+		return await streamToText(stream)
 	} catch {
-		return fallback;
+		return fallback
 	}
 }
 
@@ -166,10 +166,10 @@ export async function safeStreamToJson<T>(
 	fallback: T,
 ): Promise<T> {
 	try {
-		if (!stream) return fallback;
-		return (await Bun.readableStreamToJSON(stream)) as T;
+		if (!stream) return fallback
+		return (await Bun.readableStreamToJSON(stream)) as T
 	} catch {
-		return fallback;
+		return fallback
 	}
 }
 
@@ -184,7 +184,7 @@ export async function safeStreamToJson<T>(
  * @returns ReadableStream
  */
 export function textToStream(text: string): ReadableStream<Uint8Array> {
-	return new Blob([text]).stream();
+	return new Blob([text]).stream()
 }
 
 /**
@@ -196,7 +196,7 @@ export function textToStream(text: string): ReadableStream<Uint8Array> {
 export function bytesToStream(
 	bytes: Uint8Array | ArrayBuffer,
 ): ReadableStream<Uint8Array> {
-	return new Blob([bytes]).stream();
+	return new Blob([bytes]).stream()
 }
 
 /**
@@ -206,7 +206,7 @@ export function bytesToStream(
  * @returns ReadableStream
  */
 export function jsonToStream(value: unknown): ReadableStream<Uint8Array> {
-	return new Blob([JSON.stringify(value)]).stream();
+	return new Blob([JSON.stringify(value)]).stream()
 }
 
 // ============================================================================
@@ -222,20 +222,20 @@ export function jsonToStream(value: unknown): ReadableStream<Uint8Array> {
 export async function collectStream<T>(
 	stream: ReadableStream<T>,
 ): Promise<T[]> {
-	const chunks: T[] = [];
-	const reader = stream.getReader();
+	const chunks: T[] = []
+	const reader = stream.getReader()
 
 	try {
 		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			chunks.push(value);
+			const { done, value } = await reader.read()
+			if (done) break
+			chunks.push(value)
 		}
 	} finally {
-		reader.releaseLock();
+		reader.releaseLock()
 	}
 
-	return chunks;
+	return chunks
 }
 
 /**
@@ -249,22 +249,22 @@ export async function collectStream<T>(
 export async function countStreamBytes(
 	stream: ReadableStream<Uint8Array>,
 ): Promise<{ byteCount: number; stream: ReadableStream<Uint8Array> }> {
-	const [countStream, returnStream] = stream.tee();
+	const [countStream, returnStream] = stream.tee()
 
-	let byteCount = 0;
-	const reader = countStream.getReader();
+	let byteCount = 0
+	const reader = countStream.getReader()
 
 	try {
 		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			byteCount += value.length;
+			const { done, value } = await reader.read()
+			if (done) break
+			byteCount += value.length
 		}
 	} finally {
-		reader.releaseLock();
+		reader.releaseLock()
 	}
 
-	return { byteCount, stream: returnStream };
+	return { byteCount, stream: returnStream }
 }
 
 /**
@@ -280,25 +280,25 @@ export function transformStream<T, U>(
 ): ReadableStream<U> {
 	return new ReadableStream<U>({
 		async start(controller) {
-			const reader = stream.getReader();
+			const reader = stream.getReader()
 
 			try {
 				while (true) {
-					const { done, value } = await reader.read();
+					const { done, value } = await reader.read()
 					if (done) {
-						controller.close();
-						break;
+						controller.close()
+						break
 					}
-					const transformed = await transform(value);
-					controller.enqueue(transformed);
+					const transformed = await transform(value)
+					controller.enqueue(transformed)
 				}
 			} catch (error) {
-				controller.error(error);
+				controller.error(error)
 			} finally {
-				reader.releaseLock();
+				reader.releaseLock()
 			}
 		},
-	});
+	})
 }
 
 /**
@@ -314,14 +314,14 @@ export function generatorToStream<T>(
 		async start(controller) {
 			try {
 				for await (const value of generator()) {
-					controller.enqueue(value);
+					controller.enqueue(value)
 				}
-				controller.close();
+				controller.close()
 			} catch (error) {
-				controller.error(error);
+				controller.error(error)
 			}
 		},
-	});
+	})
 }
 
 /**
@@ -335,31 +335,31 @@ export function mergeStreams<T>(
 ): ReadableStream<T> {
 	return new ReadableStream<T>({
 		async start(controller) {
-			let activeReaders = streams.length;
+			let activeReaders = streams.length
 
 			const readFromStream = async (stream: ReadableStream<T>) => {
-				const reader = stream.getReader();
+				const reader = stream.getReader()
 				try {
 					while (true) {
-						const { done, value } = await reader.read();
+						const { done, value } = await reader.read()
 						if (done) {
-							activeReaders--;
+							activeReaders--
 							if (activeReaders === 0) {
-								controller.close();
+								controller.close()
 							}
-							return;
+							return
 						}
-						controller.enqueue(value);
+						controller.enqueue(value)
 					}
 				} catch (error) {
-					controller.error(error);
+					controller.error(error)
 				} finally {
-					reader.releaseLock();
+					reader.releaseLock()
 				}
-			};
+			}
 
 			// Start reading from all streams concurrently
-			await Promise.all(streams.map((s) => readFromStream(s)));
+			await Promise.all(streams.map((s) => readFromStream(s)))
 		},
-	});
+	})
 }

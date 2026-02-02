@@ -17,7 +17,7 @@ Execute operations with exclusive file locks to prevent race conditions.
 **Usage:**
 
 ```typescript
-import { withFileLock } from "@sidequest/core/concurrency";
+import { withFileLock } from "@side-quest/core/concurrency";
 
 // Prevent concurrent modifications to a resource
 await withFileLock('classifier-registry', async () => {
@@ -58,7 +58,7 @@ Maintenance utility for removing stale lock files from crashed processes.
 **Usage:**
 
 ```typescript
-import { cleanupStaleLocks } from "@sidequest/core/concurrency";
+import { cleanupStaleLocks } from "@side-quest/core/concurrency";
 
 // On application startup
 const result = await cleanupStaleLocks();
@@ -78,7 +78,7 @@ Execute multi-step operations with automatic rollback on failure.
 **Usage:**
 
 ```typescript
-import { Transaction } from "@sidequest/core/concurrency";
+import { Transaction } from "@side-quest/core/concurrency";
 
 const tx = new Transaction();
 
@@ -121,7 +121,7 @@ if (!result.success) {
 **Convenience Function:**
 
 ```typescript
-import { executeTransaction } from "@sidequest/core/concurrency";
+import { executeTransaction } from "@side-quest/core/concurrency";
 
 const result = await executeTransaction([
   {
@@ -142,7 +142,7 @@ const result = await executeTransaction([
 ### File Creation with Cleanup
 
 ```typescript
-import { Transaction } from "@sidequest/core/concurrency";
+import { Transaction } from "@side-quest/core/concurrency";
 
 async function createClassifier(name: string, code: string) {
   const tx = new Transaction();
@@ -180,7 +180,7 @@ async function createClassifier(name: string, code: string) {
 ### Registry Updates with Locking
 
 ```typescript
-import { withFileLock } from "@sidequest/core/concurrency";
+import { withFileLock } from "@side-quest/core/concurrency";
 
 async function addToRegistry(item: RegistryItem) {
   return withFileLock('registry', async () => {
@@ -202,7 +202,7 @@ async function addToRegistry(item: RegistryItem) {
 ### Combined: Transaction + Locking
 
 ```typescript
-import { Transaction, withFileLock } from "@sidequest/core/concurrency";
+import { Transaction, withFileLock } from "@side-quest/core/concurrency";
 
 async function createClassifierWithLocking(name: string, code: string) {
   return withFileLock('classifier-creation', async () => {
@@ -265,5 +265,5 @@ import { withFileLock } from "../shared/file-lock.js";
 import { Transaction } from "../shared/transaction.js";
 
 // After (core)
-import { withFileLock, Transaction } from "@sidequest/core/concurrency";
+import { withFileLock, Transaction } from "@side-quest/core/concurrency";
 ```

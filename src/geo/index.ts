@@ -11,7 +11,7 @@
  *   generateAppleMapsUrl,
  *   generateGoogleMapsUrl,
  *   parseMapUrl
- * } from "@sidequest/core/geo";
+ * } from "@side-quest/core/geo";
  *
  * // Extract coordinates from Google Maps URL
  * const coords = extractCoordsFromGoogleMaps(
@@ -40,9 +40,9 @@
  */
 export interface Coordinates {
 	/** Latitude (-90 to 90) */
-	readonly lat: number;
+	readonly lat: number
 	/** Longitude (-180 to 180) */
-	readonly lng: number;
+	readonly lng: number
 }
 
 /**
@@ -50,13 +50,13 @@ export interface Coordinates {
  */
 export interface ParsedMapUrl {
 	/** Detected map provider */
-	readonly provider: "google" | "apple" | "unknown";
+	readonly provider: 'google' | 'apple' | 'unknown'
 	/** Extracted coordinates (if found) */
-	readonly coordinates: Coordinates | null;
+	readonly coordinates: Coordinates | null
 	/** Place name (if found in URL) */
-	readonly placeName: string | null;
+	readonly placeName: string | null
 	/** Original URL */
-	readonly originalUrl: string;
+	readonly originalUrl: string
 }
 
 // ============================================================================
@@ -91,36 +91,36 @@ export interface ParsedMapUrl {
  */
 export function extractCoordsFromGoogleMaps(url: string): Coordinates | null {
 	// Pattern 1: @lat,lng in the URL path (most common)
-	const atPattern = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+	const atPattern = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/)
 	if (atPattern?.[1] && atPattern?.[2]) {
-		const lat = Number.parseFloat(atPattern[1]);
-		const lng = Number.parseFloat(atPattern[2]);
+		const lat = Number.parseFloat(atPattern[1])
+		const lng = Number.parseFloat(atPattern[2])
 		if (isValidCoordinate(lat, lng)) {
-			return { lat, lng };
+			return { lat, lng }
 		}
 	}
 
 	// Pattern 2: ?q=lat,lng or &q=lat,lng (search/query format)
-	const queryPattern = url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+	const queryPattern = url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/)
 	if (queryPattern?.[1] && queryPattern?.[2]) {
-		const lat = Number.parseFloat(queryPattern[1]);
-		const lng = Number.parseFloat(queryPattern[2]);
+		const lat = Number.parseFloat(queryPattern[1])
+		const lng = Number.parseFloat(queryPattern[2])
 		if (isValidCoordinate(lat, lng)) {
-			return { lat, lng };
+			return { lat, lng }
 		}
 	}
 
 	// Pattern 3: ll=lat,lng (legacy format)
-	const llPattern = url.match(/[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+	const llPattern = url.match(/[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/)
 	if (llPattern?.[1] && llPattern?.[2]) {
-		const lat = Number.parseFloat(llPattern[1]);
-		const lng = Number.parseFloat(llPattern[2]);
+		const lat = Number.parseFloat(llPattern[1])
+		const lng = Number.parseFloat(llPattern[2])
 		if (isValidCoordinate(lat, lng)) {
-			return { lat, lng };
+			return { lat, lng }
 		}
 	}
 
-	return null;
+	return null
 }
 
 /**
@@ -144,26 +144,26 @@ export function extractCoordsFromGoogleMaps(url: string): Coordinates | null {
  */
 export function extractCoordsFromAppleMaps(url: string): Coordinates | null {
 	// Pattern: ll=lat,lng (Apple Maps standard format)
-	const llPattern = url.match(/[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+	const llPattern = url.match(/[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/)
 	if (llPattern?.[1] && llPattern?.[2]) {
-		const lat = Number.parseFloat(llPattern[1]);
-		const lng = Number.parseFloat(llPattern[2]);
+		const lat = Number.parseFloat(llPattern[1])
+		const lng = Number.parseFloat(llPattern[2])
 		if (isValidCoordinate(lat, lng)) {
-			return { lat, lng };
+			return { lat, lng }
 		}
 	}
 
 	// Pattern: sll=lat,lng (search location)
-	const sllPattern = url.match(/[?&]sll=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+	const sllPattern = url.match(/[?&]sll=(-?\d+\.?\d*),(-?\d+\.?\d*)/)
 	if (sllPattern?.[1] && sllPattern?.[2]) {
-		const lat = Number.parseFloat(sllPattern[1]);
-		const lng = Number.parseFloat(sllPattern[2]);
+		const lat = Number.parseFloat(sllPattern[1])
+		const lng = Number.parseFloat(sllPattern[2])
 		if (isValidCoordinate(lat, lng)) {
-			return { lat, lng };
+			return { lat, lng }
 		}
 	}
 
-	return null;
+	return null
 }
 
 // ============================================================================
@@ -197,8 +197,8 @@ export function generateAppleMapsUrl(
 	lng: number,
 	placeName?: string,
 ): string {
-	const query = placeName ? `&q=${encodeURIComponent(placeName)}` : "";
-	return `maps://?ll=${lat},${lng}${query}`;
+	const query = placeName ? `&q=${encodeURIComponent(placeName)}` : ''
+	return `maps://?ll=${lat},${lng}${query}`
 }
 
 /**
@@ -223,8 +223,8 @@ export function generateAppleMapsWebUrl(
 	lng: number,
 	placeName?: string,
 ): string {
-	const query = placeName ? `&q=${encodeURIComponent(placeName)}` : "";
-	return `https://maps.apple.com/?ll=${lat},${lng}${query}`;
+	const query = placeName ? `&q=${encodeURIComponent(placeName)}` : ''
+	return `https://maps.apple.com/?ll=${lat},${lng}${query}`
 }
 
 /**
@@ -255,7 +255,7 @@ export function generateGoogleMapsUrl(
 	_placeName?: string,
 ): string {
 	// Using search API format - most reliable for opening in app
-	return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+	return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
 }
 
 /**
@@ -273,7 +273,7 @@ export function generateGoogleMapsUrl(
  * ```
  */
 export function generateGoogleMapsSearchUrl(placeName: string): string {
-	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`;
+	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`
 }
 
 /**
@@ -295,7 +295,7 @@ export function generateGoogleMapsSearchUrl(placeName: string): string {
  * ```
  */
 export function generateAppleMapsSearchUrl(placeName: string): string {
-	return `https://maps.apple.com/?q=${encodeURIComponent(placeName)}`;
+	return `https://maps.apple.com/?q=${encodeURIComponent(placeName)}`
 }
 
 // ============================================================================
@@ -334,32 +334,32 @@ export function generateAppleMapsSearchUrl(placeName: string): string {
  */
 export function parseMapUrl(url: string): ParsedMapUrl {
 	const result: ParsedMapUrl = {
-		provider: "unknown",
+		provider: 'unknown',
 		coordinates: null,
 		placeName: null,
 		originalUrl: url,
-	};
+	}
 
 	// Detect provider and extract coordinates
 	if (isGoogleMapsUrl(url)) {
 		return {
 			...result,
-			provider: "google",
+			provider: 'google',
 			coordinates: extractCoordsFromGoogleMaps(url),
 			placeName: extractPlaceNameFromGoogleMaps(url),
-		};
+		}
 	}
 
 	if (isAppleMapsUrl(url)) {
 		return {
 			...result,
-			provider: "apple",
+			provider: 'apple',
 			coordinates: extractCoordsFromAppleMaps(url),
 			placeName: extractPlaceNameFromAppleMaps(url),
-		};
+		}
 	}
 
-	return result;
+	return result
 }
 
 // ============================================================================
@@ -380,7 +380,7 @@ export function parseMapUrl(url: string): ParsedMapUrl {
  * ```
  */
 export function isGoogleMapsUrl(url: string): boolean {
-	return /google\.com\/maps|maps\.google\./i.test(url);
+	return /google\.com\/maps|maps\.google\./i.test(url)
 }
 
 /**
@@ -397,7 +397,7 @@ export function isGoogleMapsUrl(url: string): boolean {
  * ```
  */
 export function isAppleMapsUrl(url: string): boolean {
-	return /^maps:\/\/|maps\.apple\.com/i.test(url);
+	return /^maps:\/\/|maps\.apple\.com/i.test(url)
 }
 
 /**
@@ -414,7 +414,7 @@ export function isAppleMapsUrl(url: string): boolean {
  * ```
  */
 export function isMapUrl(url: string): boolean {
-	return isGoogleMapsUrl(url) || isAppleMapsUrl(url);
+	return isGoogleMapsUrl(url) || isAppleMapsUrl(url)
 }
 
 // ============================================================================
@@ -443,7 +443,7 @@ export function isValidCoordinate(lat: number, lng: number): boolean {
 		lat <= 90 &&
 		lng >= -180 &&
 		lng <= 180
-	);
+	)
 }
 
 /**
@@ -463,7 +463,7 @@ export function isValidCoordinate(lat: number, lng: number): boolean {
  * ```
  */
 export function formatCoordinates(coords: Coordinates, precision = 6): string {
-	return `${coords.lat.toFixed(precision)}, ${coords.lng.toFixed(precision)}`;
+	return `${coords.lat.toFixed(precision)}, ${coords.lng.toFixed(precision)}`
 }
 
 // ============================================================================
@@ -476,22 +476,22 @@ export function formatCoordinates(coords: Coordinates, precision = 6): string {
  */
 function extractPlaceNameFromGoogleMaps(url: string): string | null {
 	// Pattern: /place/Place+Name/ in the URL path
-	const placeMatch = url.match(/\/place\/([^/@]+)/);
+	const placeMatch = url.match(/\/place\/([^/@]+)/)
 	if (placeMatch?.[1]) {
-		return decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+		return decodeURIComponent(placeMatch[1].replace(/\+/g, ' '))
 	}
 
 	// Pattern: q=Place+Name in query string (if not coordinates)
-	const queryMatch = url.match(/[?&]q=([^&]+)/);
+	const queryMatch = url.match(/[?&]q=([^&]+)/)
 	if (queryMatch?.[1]) {
-		const decoded = decodeURIComponent(queryMatch[1].replace(/\+/g, " "));
+		const decoded = decodeURIComponent(queryMatch[1].replace(/\+/g, ' '))
 		// Check if it's not just coordinates
 		if (!/^-?\d+\.?\d*,-?\d+\.?\d*$/.test(decoded)) {
-			return decoded;
+			return decoded
 		}
 	}
 
-	return null;
+	return null
 }
 
 /**
@@ -500,10 +500,10 @@ function extractPlaceNameFromGoogleMaps(url: string): string | null {
  */
 function extractPlaceNameFromAppleMaps(url: string): string | null {
 	// Pattern: q=Place+Name in query string
-	const queryMatch = url.match(/[?&]q=([^&]+)/);
+	const queryMatch = url.match(/[?&]q=([^&]+)/)
 	if (queryMatch?.[1]) {
-		return decodeURIComponent(queryMatch[1].replace(/\+/g, " "));
+		return decodeURIComponent(queryMatch[1].replace(/\+/g, ' '))
 	}
 
-	return null;
+	return null
 }

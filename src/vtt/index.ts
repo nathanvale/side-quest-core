@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import { parseVtt, extractTextFromVtt, isVttFile } from "@sidequest/core/vtt";
+ * import { parseVtt, extractTextFromVtt, isVttFile } from "@side-quest/core/vtt";
  *
  * // Check if a file is VTT format
  * if (isVttFile("meeting-transcript.vtt")) {
@@ -33,4 +33,4 @@ export {
 	parseVtt,
 	type VttCue,
 	type VttParseResult,
-} from "./parser.ts";
+} from './parser.ts'

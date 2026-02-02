@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { gzip, gunzip, deflate, inflate } from "@sidequest/core/compression";
+ * import { gzip, gunzip, deflate, inflate } from "@side-quest/core/compression";
  *
  * // Compress and decompress
  * const compressed = gzip("Hello, World!");
@@ -15,10 +15,10 @@
  */
 
 /** Compression level (1-9, where 1 is fastest and 9 is smallest) */
-export type CompressionLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type CompressionLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 /** Input types accepted by compression functions */
-export type CompressInput = string | Uint8Array | ArrayBuffer;
+export type CompressInput = string | Uint8Array | ArrayBuffer
 
 /**
  * Compress data using gzip algorithm
@@ -37,8 +37,8 @@ export function gzip(
 	data: CompressInput,
 	level?: CompressionLevel,
 ): Uint8Array {
-	const input = toUint8Array(data);
-	return Bun.gzipSync(input as Uint8Array<ArrayBuffer>, { level });
+	const input = toUint8Array(data)
+	return Bun.gzipSync(input as Uint8Array<ArrayBuffer>, { level })
 }
 
 /**
@@ -54,8 +54,8 @@ export function gzip(
  * ```
  */
 export function gunzip(data: Uint8Array | ArrayBuffer): Uint8Array {
-	const input = data instanceof Uint8Array ? data : new Uint8Array(data);
-	return Bun.gunzipSync(input as Uint8Array<ArrayBuffer>);
+	const input = data instanceof Uint8Array ? data : new Uint8Array(data)
+	return Bun.gunzipSync(input as Uint8Array<ArrayBuffer>)
 }
 
 /**
@@ -72,8 +72,8 @@ export function gunzip(data: Uint8Array | ArrayBuffer): Uint8Array {
  * ```
  */
 export function gunzipString(data: Uint8Array | ArrayBuffer): string {
-	const decompressed = gunzip(data);
-	return new TextDecoder().decode(decompressed);
+	const decompressed = gunzip(data)
+	return new TextDecoder().decode(decompressed)
 }
 
 /**
@@ -92,8 +92,8 @@ export function deflate(
 	data: CompressInput,
 	level?: CompressionLevel,
 ): Uint8Array {
-	const input = toUint8Array(data);
-	return Bun.deflateSync(input as Uint8Array<ArrayBuffer>, { level });
+	const input = toUint8Array(data)
+	return Bun.deflateSync(input as Uint8Array<ArrayBuffer>, { level })
 }
 
 /**
@@ -108,8 +108,8 @@ export function deflate(
  * ```
  */
 export function inflate(data: Uint8Array | ArrayBuffer): Uint8Array {
-	const input = data instanceof Uint8Array ? data : new Uint8Array(data);
-	return Bun.inflateSync(input as Uint8Array<ArrayBuffer>);
+	const input = data instanceof Uint8Array ? data : new Uint8Array(data)
+	return Bun.inflateSync(input as Uint8Array<ArrayBuffer>)
 }
 
 /**
@@ -119,8 +119,8 @@ export function inflate(data: Uint8Array | ArrayBuffer): Uint8Array {
  * @returns Decompressed string
  */
 export function inflateString(data: Uint8Array | ArrayBuffer): string {
-	const decompressed = inflate(data);
-	return new TextDecoder().decode(decompressed);
+	const decompressed = inflate(data)
+	return new TextDecoder().decode(decompressed)
 }
 
 /**
@@ -137,8 +137,8 @@ export function inflateString(data: Uint8Array | ArrayBuffer): string {
  * ```
  */
 export function zstdCompress(data: CompressInput, level?: number): Uint8Array {
-	const input = toUint8Array(data);
-	return Bun.zstdCompressSync(input as Uint8Array<ArrayBuffer>, { level });
+	const input = toUint8Array(data)
+	return Bun.zstdCompressSync(input as Uint8Array<ArrayBuffer>, { level })
 }
 
 /**
@@ -153,8 +153,8 @@ export function zstdCompress(data: CompressInput, level?: number): Uint8Array {
  * ```
  */
 export function zstdDecompress(data: Uint8Array | ArrayBuffer): Uint8Array {
-	const input = data instanceof Uint8Array ? data : new Uint8Array(data);
-	return Bun.zstdDecompressSync(input as Uint8Array<ArrayBuffer>);
+	const input = data instanceof Uint8Array ? data : new Uint8Array(data)
+	return Bun.zstdDecompressSync(input as Uint8Array<ArrayBuffer>)
 }
 
 /**
@@ -164,8 +164,8 @@ export function zstdDecompress(data: Uint8Array | ArrayBuffer): Uint8Array {
  * @returns Decompressed string
  */
 export function zstdDecompressString(data: Uint8Array | ArrayBuffer): string {
-	const decompressed = zstdDecompress(data);
-	return new TextDecoder().decode(decompressed);
+	const decompressed = zstdDecompress(data)
+	return new TextDecoder().decode(decompressed)
 }
 
 /**
@@ -183,16 +183,16 @@ export function zstdDecompressString(data: Uint8Array | ArrayBuffer): string {
  */
 export function compressToBase64(
 	data: CompressInput,
-	algorithm: "gzip" | "deflate" | "zstd" = "gzip",
+	algorithm: 'gzip' | 'deflate' | 'zstd' = 'gzip',
 ): string {
 	const compressed =
-		algorithm === "gzip"
+		algorithm === 'gzip'
 			? gzip(data)
-			: algorithm === "deflate"
+			: algorithm === 'deflate'
 				? deflate(data)
-				: zstdCompress(data);
+				: zstdCompress(data)
 
-	return Buffer.from(compressed).toString("base64");
+	return Buffer.from(compressed).toString('base64')
 }
 
 /**
@@ -209,18 +209,18 @@ export function compressToBase64(
  */
 export function decompressFromBase64(
 	base64: string,
-	algorithm: "gzip" | "deflate" | "zstd" = "gzip",
+	algorithm: 'gzip' | 'deflate' | 'zstd' = 'gzip',
 ): string {
-	const compressed = Buffer.from(base64, "base64");
+	const compressed = Buffer.from(base64, 'base64')
 
 	const decompressed =
-		algorithm === "gzip"
+		algorithm === 'gzip'
 			? gunzip(compressed)
-			: algorithm === "deflate"
+			: algorithm === 'deflate'
 				? inflate(compressed)
-				: zstdDecompress(compressed);
+				: zstdDecompress(compressed)
 
-	return new TextDecoder().decode(decompressed);
+	return new TextDecoder().decode(decompressed)
 }
 
 /**
@@ -241,13 +241,13 @@ export function compressionRatio(
 	compressed: Uint8Array,
 ): number {
 	const originalSize =
-		typeof original === "string"
+		typeof original === 'string'
 			? new TextEncoder().encode(original).length
 			: original instanceof Uint8Array
 				? original.length
-				: original.byteLength;
+				: original.byteLength
 
-	return compressed.length / originalSize;
+	return compressed.length / originalSize
 }
 
 /**
@@ -264,17 +264,17 @@ export function compressionRatio(
  * ```
  */
 export function compareCompression(data: CompressInput): {
-	original: number;
-	gzip: { size: number; ratio: number };
-	deflate: { size: number; ratio: number };
-	zstd: { size: number; ratio: number };
+	original: number
+	gzip: { size: number; ratio: number }
+	deflate: { size: number; ratio: number }
+	zstd: { size: number; ratio: number }
 } {
-	const input = toUint8Array(data);
-	const originalSize = input.length;
+	const input = toUint8Array(data)
+	const originalSize = input.length
 
-	const gzipped = gzip(data);
-	const deflated = deflate(data);
-	const zstdCompressed = zstdCompress(data);
+	const gzipped = gzip(data)
+	const deflated = deflate(data)
+	const zstdCompressed = zstdCompress(data)
 
 	return {
 		original: originalSize,
@@ -290,16 +290,16 @@ export function compareCompression(data: CompressInput): {
 			size: zstdCompressed.length,
 			ratio: zstdCompressed.length / originalSize,
 		},
-	};
+	}
 }
 
 // Internal helper
 function toUint8Array(data: CompressInput): Uint8Array {
-	if (typeof data === "string") {
-		return new TextEncoder().encode(data);
+	if (typeof data === 'string') {
+		return new TextEncoder().encode(data)
 	}
 	if (data instanceof Uint8Array) {
-		return data;
+		return data
 	}
-	return new Uint8Array(data);
+	return new Uint8Array(data)
 }

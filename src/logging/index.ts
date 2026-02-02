@@ -1,5 +1,5 @@
 /**
- * @sidequest/core/logging
+ * @side-quest/core/logging
  *
  * Shared logging utilities for SideQuest marketplace plugins.
  *
@@ -11,7 +11,7 @@
  *
  * @example
  * ```typescript
- * import { createPluginLogger } from "@sidequest/core/logging";
+ * import { createPluginLogger } from "@side-quest/core/logging";
  *
  * const { initLogger, rootLogger, subsystemLoggers } = createPluginLogger({
  *   name: "my-plugin",
@@ -35,14 +35,14 @@ export {
 	DEFAULT_MAX_FILES,
 	DEFAULT_MAX_SIZE,
 	type LogLevel,
-} from "./config.ts";
+} from './config.ts'
 // Re-export everything
-export { createCorrelationId } from "./correlation.ts";
+export { createCorrelationId } from './correlation.ts'
 export {
 	createPluginLogger,
 	type PluginLogger,
 	type PluginLoggerOptions,
-} from "./factory.ts";
+} from './factory.ts'
 export {
 	getGlobalMetricsCollector,
 	MetricsCollector,
@@ -50,4 +50,4 @@ export {
 	type OperationMetrics,
 	type PerformanceSummary,
 	resetGlobalMetricsCollector,
-} from "./metrics.ts";
+} from './metrics.ts'

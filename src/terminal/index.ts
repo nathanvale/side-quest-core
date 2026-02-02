@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { color, bold, dim, table, stripAnsi } from "@sidequest/core/terminal";
+ * import { color, bold, dim, table, stripAnsi } from "@side-quest/core/terminal";
  *
  * // Colorful output
  * console.log(color("red", "Error:"), "Something went wrong");
@@ -34,10 +34,10 @@ export type ColorInput =
 	| number
 	| { r: number; g: number; b: number; a?: number }
 	| [number, number, number]
-	| [number, number, number, number];
+	| [number, number, number, number]
 
 /** ANSI color depth options */
-export type AnsiColorDepth = "ansi" | "ansi-16" | "ansi-256" | "ansi-16m";
+export type AnsiColorDepth = 'ansi' | 'ansi-16' | 'ansi-256' | 'ansi-16m'
 
 /**
  * Format a color as ANSI escape code for terminal output
@@ -62,13 +62,13 @@ export type AnsiColorDepth = "ansi" | "ansi-16" | "ansi-256" | "ansi-16m";
  * ```
  */
 export function color(input: ColorInput, text?: string): string {
-	const ansi = Bun.color(input, "ansi");
-	if (!ansi) return text ?? "";
+	const ansi = Bun.color(input, 'ansi')
+	if (!ansi) return text ?? ''
 
 	if (text !== undefined) {
-		return `${ansi}${text}${RESET}`;
+		return `${ansi}${text}${RESET}`
 	}
-	return ansi;
+	return ansi
 }
 
 /**
@@ -79,71 +79,71 @@ export function color(input: ColorInput, text?: string): string {
  * @returns ANSI escape code for background
  */
 export function bgColor(input: ColorInput, text?: string): string {
-	const rgba = Bun.color(input, "{rgba}");
-	if (!rgba) return text ?? "";
+	const rgba = Bun.color(input, '{rgba}')
+	if (!rgba) return text ?? ''
 
 	// Background colors use 48 instead of 38
-	const bg = `\x1b[48;2;${rgba.r};${rgba.g};${rgba.b}m`;
+	const bg = `\x1b[48;2;${rgba.r};${rgba.g};${rgba.b}m`
 
 	if (text !== undefined) {
-		return `${bg}${text}${RESET}`;
+		return `${bg}${text}${RESET}`
 	}
-	return bg;
+	return bg
 }
 
 /** ANSI reset code */
-export const RESET = "\x1b[0m";
+export const RESET = '\x1b[0m'
 
 /** ANSI style codes */
-export const BOLD = "\x1b[1m";
-export const DIM = "\x1b[2m";
-export const ITALIC = "\x1b[3m";
-export const UNDERLINE = "\x1b[4m";
-export const BLINK = "\x1b[5m";
-export const INVERSE = "\x1b[7m";
-export const HIDDEN = "\x1b[8m";
-export const STRIKETHROUGH = "\x1b[9m";
+export const BOLD = '\x1b[1m'
+export const DIM = '\x1b[2m'
+export const ITALIC = '\x1b[3m'
+export const UNDERLINE = '\x1b[4m'
+export const BLINK = '\x1b[5m'
+export const INVERSE = '\x1b[7m'
+export const HIDDEN = '\x1b[8m'
+export const STRIKETHROUGH = '\x1b[9m'
 
 /**
  * Apply bold style to text
  */
 export function bold(text: string): string {
-	return `${BOLD}${text}${RESET}`;
+	return `${BOLD}${text}${RESET}`
 }
 
 /**
  * Apply dim style to text
  */
 export function dim(text: string): string {
-	return `${DIM}${text}${RESET}`;
+	return `${DIM}${text}${RESET}`
 }
 
 /**
  * Apply italic style to text
  */
 export function italic(text: string): string {
-	return `${ITALIC}${text}${RESET}`;
+	return `${ITALIC}${text}${RESET}`
 }
 
 /**
  * Apply underline style to text
  */
 export function underline(text: string): string {
-	return `${UNDERLINE}${text}${RESET}`;
+	return `${UNDERLINE}${text}${RESET}`
 }
 
 /**
  * Apply strikethrough style to text
  */
 export function strikethrough(text: string): string {
-	return `${STRIKETHROUGH}${text}${RESET}`;
+	return `${STRIKETHROUGH}${text}${RESET}`
 }
 
 /**
  * Apply inverse (swap foreground/background) style
  */
 export function inverse(text: string): string {
-	return `${INVERSE}${text}${RESET}`;
+	return `${INVERSE}${text}${RESET}`
 }
 
 // ============================================================================
@@ -154,49 +154,49 @@ export function inverse(text: string): string {
  * Red text for errors
  */
 export function red(text: string): string {
-	return color("red", text);
+	return color('red', text)
 }
 
 /**
  * Green text for success
  */
 export function green(text: string): string {
-	return color("green", text);
+	return color('green', text)
 }
 
 /**
  * Yellow text for warnings
  */
 export function yellow(text: string): string {
-	return color("yellow", text);
+	return color('yellow', text)
 }
 
 /**
  * Blue text for info
  */
 export function blue(text: string): string {
-	return color("blue", text);
+	return color('blue', text)
 }
 
 /**
  * Magenta text
  */
 export function magenta(text: string): string {
-	return color("magenta", text);
+	return color('magenta', text)
 }
 
 /**
  * Cyan text
  */
 export function cyan(text: string): string {
-	return color("cyan", text);
+	return color('cyan', text)
 }
 
 /**
  * Gray text for secondary content
  */
 export function gray(text: string): string {
-	return color("gray", text);
+	return color('gray', text)
 }
 
 // ============================================================================
@@ -207,35 +207,35 @@ export function gray(text: string): string {
  * Format an error message
  */
 export function error(message: string): string {
-	return `${color("red", "✖")} ${message}`;
+	return `${color('red', '✖')} ${message}`
 }
 
 /**
  * Format a success message
  */
 export function success(message: string): string {
-	return `${color("green", "✔")} ${message}`;
+	return `${color('green', '✔')} ${message}`
 }
 
 /**
  * Format a warning message
  */
 export function warning(message: string): string {
-	return `${color("yellow", "⚠")} ${message}`;
+	return `${color('yellow', '⚠')} ${message}`
 }
 
 /**
  * Format an info message
  */
 export function info(message: string): string {
-	return `${color("blue", "ℹ")} ${message}`;
+	return `${color('blue', 'ℹ')} ${message}`
 }
 
 /**
  * Format a debug message
  */
 export function debug(message: string): string {
-	return `${dim("⬢")} ${dim(message)}`;
+	return `${dim('⬢')} ${dim(message)}`
 }
 
 // ============================================================================
@@ -256,7 +256,7 @@ export function debug(message: string): string {
  * ```
  */
 export function stripAnsi(text: string): string {
-	return Bun.stripANSI(text);
+	return Bun.stripANSI(text)
 }
 
 /**
@@ -281,12 +281,12 @@ export function stringWidth(
 	text: string,
 	options?: {
 		/** Count ANSI codes as width (default: false) */
-		countAnsiEscapeCodes?: boolean;
+		countAnsiEscapeCodes?: boolean
 		/** Treat ambiguous width chars as narrow (default: true) */
-		ambiguousIsNarrow?: boolean;
+		ambiguousIsNarrow?: boolean
 	},
 ): number {
-	return Bun.stringWidth(text, options);
+	return Bun.stringWidth(text, options)
 }
 
 /**
@@ -301,24 +301,24 @@ export function stringWidth(
 export function pad(
 	text: string,
 	width: number,
-	align: "left" | "right" | "center" = "left",
-	char = " ",
+	align: 'left' | 'right' | 'center' = 'left',
+	char = ' ',
 ): string {
-	const currentWidth = stringWidth(text);
-	if (currentWidth >= width) return text;
+	const currentWidth = stringWidth(text)
+	if (currentWidth >= width) return text
 
-	const padding = width - currentWidth;
+	const padding = width - currentWidth
 
 	switch (align) {
-		case "right":
-			return char.repeat(padding) + text;
-		case "center": {
-			const left = Math.floor(padding / 2);
-			const right = padding - left;
-			return char.repeat(left) + text + char.repeat(right);
+		case 'right':
+			return char.repeat(padding) + text
+		case 'center': {
+			const left = Math.floor(padding / 2)
+			const right = padding - left
+			return char.repeat(left) + text + char.repeat(right)
 		}
 		default:
-			return text + char.repeat(padding);
+			return text + char.repeat(padding)
 	}
 }
 
@@ -330,25 +330,25 @@ export function pad(
  * @param suffix - Suffix to add when truncated (default: "…")
  * @returns Truncated string
  */
-export function truncate(text: string, maxWidth: number, suffix = "…"): string {
-	const textWidth = stringWidth(text);
-	if (textWidth <= maxWidth) return text;
+export function truncate(text: string, maxWidth: number, suffix = '…'): string {
+	const textWidth = stringWidth(text)
+	if (textWidth <= maxWidth) return text
 
-	const suffixWidth = stringWidth(suffix);
-	const targetWidth = maxWidth - suffixWidth;
+	const suffixWidth = stringWidth(suffix)
+	const targetWidth = maxWidth - suffixWidth
 
 	// Build string character by character
-	let result = "";
-	let width = 0;
+	let result = ''
+	let width = 0
 
 	for (const char of text) {
-		const charWidth = stringWidth(char);
-		if (width + charWidth > targetWidth) break;
-		result += char;
-		width += charWidth;
+		const charWidth = stringWidth(char)
+		if (width + charWidth > targetWidth) break
+		result += char
+		width += charWidth
 	}
 
-	return result + suffix;
+	return result + suffix
 }
 
 // ============================================================================
@@ -376,14 +376,14 @@ export function inspect(
 	value: unknown,
 	options?: {
 		/** Enable ANSI colors */
-		colors?: boolean;
+		colors?: boolean
 		/** Max depth to recurse */
-		depth?: number;
+		depth?: number
 		/** Sort object keys */
-		sorted?: boolean;
+		sorted?: boolean
 	},
 ): string {
-	return Bun.inspect(value, options);
+	return Bun.inspect(value, options)
 }
 
 /**
@@ -419,9 +419,9 @@ export function table(
 	options?: { colors?: boolean },
 ): string {
 	if (Array.isArray(columnsOrOptions)) {
-		return Bun.inspect.table(data, columnsOrOptions, options);
+		return Bun.inspect.table(data, columnsOrOptions, options)
 	}
-	return Bun.inspect.table(data, columnsOrOptions);
+	return Bun.inspect.table(data, columnsOrOptions)
 }
 
 // ============================================================================
@@ -447,31 +447,31 @@ export function progressBar(
 	total: number,
 	width = 40,
 ): string {
-	const percent = Math.min(100, Math.max(0, (current / total) * 100));
-	const filled = Math.round((percent / 100) * width);
-	const empty = width - filled;
+	const percent = Math.min(100, Math.max(0, (current / total) * 100))
+	const filled = Math.round((percent / 100) * width)
+	const empty = width - filled
 
-	const bar = "█".repeat(filled) + "░".repeat(empty);
-	const percentStr = `${Math.round(percent)}%`.padStart(4);
+	const bar = '█'.repeat(filled) + '░'.repeat(empty)
+	const percentStr = `${Math.round(percent)}%`.padStart(4)
 
-	return `${bar} ${percentStr}`;
+	return `${bar} ${percentStr}`
 }
 
 /**
  * Spinner frames for loading animations
  */
 export const SPINNER_FRAMES = [
-	"⠋",
-	"⠙",
-	"⠹",
-	"⠸",
-	"⠼",
-	"⠴",
-	"⠦",
-	"⠧",
-	"⠇",
-	"⠏",
-] as const;
+	'⠋',
+	'⠙',
+	'⠹',
+	'⠸',
+	'⠼',
+	'⠴',
+	'⠦',
+	'⠧',
+	'⠇',
+	'⠏',
+] as const
 
 /**
  * Get a spinner frame for the current time
@@ -480,8 +480,8 @@ export const SPINNER_FRAMES = [
  * @returns Current spinner character
  */
 export function spinner(intervalMs = 80): string {
-	const index = Math.floor(Date.now() / intervalMs) % SPINNER_FRAMES.length;
-	return SPINNER_FRAMES[index] ?? SPINNER_FRAMES[0] ?? "⠋";
+	const index = Math.floor(Date.now() / intervalMs) % SPINNER_FRAMES.length
+	return SPINNER_FRAMES[index] ?? SPINNER_FRAMES[0] ?? '⠋'
 }
 
 // ============================================================================
@@ -490,18 +490,18 @@ export function spinner(intervalMs = 80): string {
 
 /** Box drawing characters */
 export const BOX = {
-	topLeft: "┌",
-	topRight: "┐",
-	bottomLeft: "└",
-	bottomRight: "┘",
-	horizontal: "─",
-	vertical: "│",
-	teeRight: "├",
-	teeLeft: "┤",
-	teeDown: "┬",
-	teeUp: "┴",
-	cross: "┼",
-} as const;
+	topLeft: '┌',
+	topRight: '┐',
+	bottomLeft: '└',
+	bottomRight: '┘',
+	horizontal: '─',
+	vertical: '│',
+	teeRight: '├',
+	teeLeft: '┤',
+	teeDown: '┬',
+	teeUp: '┴',
+	cross: '┼',
+} as const
 
 /**
  * Draw a box around text
@@ -524,65 +524,65 @@ export function box(
 	text: string,
 	options?: {
 		/** Padding inside box */
-		padding?: number;
+		padding?: number
 		/** Box title */
-		title?: string;
+		title?: string
 		/** Border color */
-		borderColor?: ColorInput;
+		borderColor?: ColorInput
 	},
 ): string {
-	const { padding = 1, title, borderColor } = options ?? {};
-	const lines = text.split("\n");
-	const paddingStr = " ".repeat(padding);
+	const { padding = 1, title, borderColor } = options ?? {}
+	const lines = text.split('\n')
+	const paddingStr = ' '.repeat(padding)
 
 	// Calculate max width
-	let maxWidth = 0;
+	let maxWidth = 0
 	for (const line of lines) {
-		const width = stringWidth(line);
-		if (width > maxWidth) maxWidth = width;
+		const width = stringWidth(line)
+		if (width > maxWidth) maxWidth = width
 	}
 	if (title) {
-		const titleWidth = stringWidth(title) + 2; // " title "
-		if (titleWidth > maxWidth) maxWidth = titleWidth;
+		const titleWidth = stringWidth(title) + 2 // " title "
+		if (titleWidth > maxWidth) maxWidth = titleWidth
 	}
 
-	const innerWidth = maxWidth + padding * 2;
-	const bc = borderColor ? color(borderColor) : "";
-	const reset = borderColor ? RESET : "";
+	const innerWidth = maxWidth + padding * 2
+	const bc = borderColor ? color(borderColor) : ''
+	const reset = borderColor ? RESET : ''
 
 	// Build box
-	const result: string[] = [];
+	const result: string[] = []
 
 	// Top border with optional title
 	if (title) {
-		const titlePart = ` ${title} `;
-		const remaining = innerWidth - stringWidth(titlePart);
-		const left = Math.floor(remaining / 2);
-		const right = remaining - left;
+		const titlePart = ` ${title} `
+		const remaining = innerWidth - stringWidth(titlePart)
+		const left = Math.floor(remaining / 2)
+		const right = remaining - left
 		result.push(
 			`${bc}${BOX.topLeft}${BOX.horizontal.repeat(left)}${reset}${titlePart}${bc}${BOX.horizontal.repeat(right)}${BOX.topRight}${reset}`,
-		);
+		)
 	} else {
 		result.push(
 			`${bc}${BOX.topLeft}${BOX.horizontal.repeat(innerWidth)}${BOX.topRight}${reset}`,
-		);
+		)
 	}
 
 	// Content lines
 	for (const line of lines) {
-		const lineWidth = stringWidth(line);
-		const rightPad = maxWidth - lineWidth;
+		const lineWidth = stringWidth(line)
+		const rightPad = maxWidth - lineWidth
 		result.push(
-			`${bc}${BOX.vertical}${reset}${paddingStr}${line}${" ".repeat(rightPad)}${paddingStr}${bc}${BOX.vertical}${reset}`,
-		);
+			`${bc}${BOX.vertical}${reset}${paddingStr}${line}${' '.repeat(rightPad)}${paddingStr}${bc}${BOX.vertical}${reset}`,
+		)
 	}
 
 	// Bottom border
 	result.push(
 		`${bc}${BOX.bottomLeft}${BOX.horizontal.repeat(innerWidth)}${BOX.bottomRight}${reset}`,
-	);
+	)
 
-	return result.join("\n");
+	return result.join('\n')
 }
 
 // ============================================================================
@@ -594,34 +594,34 @@ export function box(
  */
 export function supportsColor(): boolean {
 	// Check NO_COLOR env var (https://no-color.org/)
-	if (process.env.NO_COLOR !== undefined) return false;
+	if (process.env.NO_COLOR !== undefined) return false
 
 	// Check FORCE_COLOR env var
-	if (process.env.FORCE_COLOR !== undefined) return true;
+	if (process.env.FORCE_COLOR !== undefined) return true
 
 	// Check if stdout is a TTY
-	return process.stdout.isTTY ?? false;
+	return process.stdout.isTTY ?? false
 }
 
 /**
  * Check if stdout is a TTY (interactive terminal)
  */
 export function isTTY(): boolean {
-	return process.stdout.isTTY ?? false;
+	return process.stdout.isTTY ?? false
 }
 
 /**
  * Get terminal width
  */
 export function terminalWidth(): number {
-	return process.stdout.columns ?? 80;
+	return process.stdout.columns ?? 80
 }
 
 /**
  * Get terminal height
  */
 export function terminalHeight(): number {
-	return process.stdout.rows ?? 24;
+	return process.stdout.rows ?? 24
 }
 
 // ============================================================================
@@ -644,7 +644,7 @@ export function terminalHeight(): number {
  * ```
  */
 export function isMainScript(importMetaPath: string): boolean {
-	return importMetaPath === Bun.main;
+	return importMetaPath === Bun.main
 }
 
 // ============================================================================
@@ -659,8 +659,8 @@ export function isMainScript(importMetaPath: string): boolean {
  * - JSON: Machine-readable, for programmatic consumption
  */
 export enum OutputFormat {
-	MARKDOWN = "markdown",
-	JSON = "json",
+	MARKDOWN = 'markdown',
+	JSON = 'json',
 }
 
 /**
@@ -678,9 +678,9 @@ export enum OutputFormat {
  * ```
  */
 export function parseOutputFormat(flag?: string): OutputFormat {
-	if (flag === "json") return OutputFormat.JSON;
-	if (flag === "md" || flag === "markdown") return OutputFormat.MARKDOWN;
-	return OutputFormat.MARKDOWN;
+	if (flag === 'json') return OutputFormat.JSON
+	if (flag === 'md' || flag === 'markdown') return OutputFormat.MARKDOWN
+	return OutputFormat.MARKDOWN
 }
 
 /**
@@ -696,15 +696,15 @@ export function parseOutputFormat(flag?: string): OutputFormat {
  * ```
  */
 export const emphasize: {
-	success: (text: string) => string;
-	info: (text: string) => string;
-	warn: (text: string) => string;
-	error: (text: string) => string;
-	dim: (text: string) => string;
+	success: (text: string) => string
+	info: (text: string) => string
+	warn: (text: string) => string
+	error: (text: string) => string
+	dim: (text: string) => string
 } = {
 	success: (text: string) => green(text),
 	info: (text: string) => cyan(text),
 	warn: (text: string) => yellow(text),
 	error: (text: string) => red(text),
 	dim: (text: string) => dim(text),
-};
+}

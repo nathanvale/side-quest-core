@@ -11,7 +11,7 @@
  *   formatFilenameTime,
  *   formatDuration,
  *   formatDateWithSpaces,
- * } from "@sidequest/core/formatters/time";
+ * } from "@side-quest/core/formatters/time";
  *
  * // 12-hour time format
  * formatTime12Hour(new Date("2024-12-10T14:30:00")); // "2:30 pm"
@@ -49,21 +49,21 @@
  */
 export function formatTime12Hour(date: Date): string {
 	// Get hours in 24-hour format
-	const hours24 = date.getHours();
+	const hours24 = date.getHours()
 
 	// Convert to 12-hour format
-	let hours12 = hours24 % 12;
+	let hours12 = hours24 % 12
 	if (hours12 === 0) {
-		hours12 = 12; // Midnight and noon are 12, not 0
+		hours12 = 12 // Midnight and noon are 12, not 0
 	}
 
 	// Get minutes with leading zero
-	const minutes = date.getMinutes().toString().padStart(2, "0");
+	const minutes = date.getMinutes().toString().padStart(2, '0')
 
 	// Determine am/pm (lowercase)
-	const period = hours24 < 12 ? "am" : "pm";
+	const period = hours24 < 12 ? 'am' : 'pm'
 
-	return `${hours12}:${minutes} ${period}`;
+	return `${hours12}:${minutes} ${period}`
 }
 
 /**
@@ -84,14 +84,14 @@ export function formatTime12Hour(date: Date): string {
  * ```
  */
 export function formatFilenameTime(date: Date): string {
-	const hours24 = date.getHours();
-	let hours12 = hours24 % 12;
+	const hours24 = date.getHours()
+	let hours12 = hours24 % 12
 	if (hours12 === 0) {
-		hours12 = 12;
+		hours12 = 12
 	}
-	const minutes = date.getMinutes().toString().padStart(2, "0");
-	const period = hours24 < 12 ? "am" : "pm";
-	return `${hours12}-${minutes}${period}`;
+	const minutes = date.getMinutes().toString().padStart(2, '0')
+	const period = hours24 < 12 ? 'am' : 'pm'
+	return `${hours12}-${minutes}${period}`
 }
 
 /**
@@ -116,17 +116,17 @@ export function formatFilenameTime(date: Date): string {
 export function formatDuration(seconds: number): string {
 	// Treat negative as zero
 	if (seconds < 0) {
-		seconds = 0;
+		seconds = 0
 	}
 
-	const h = Math.floor(seconds / 3600);
-	const m = Math.floor((seconds % 3600) / 60);
-	const s = Math.floor(seconds % 60);
+	const h = Math.floor(seconds / 3600)
+	const m = Math.floor((seconds % 3600) / 60)
+	const s = Math.floor(seconds % 60)
 
 	if (h > 0) {
-		return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+		return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 	}
-	return `${m}:${s.toString().padStart(2, "0")}`;
+	return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 /**
@@ -145,5 +145,5 @@ export function formatDuration(seconds: number): string {
  * ```
  */
 export function formatDateWithSpaces(date: string): string {
-	return date.replace(/-/g, " ");
+	return date.replace(/-/g, ' ')
 }

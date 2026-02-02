@@ -19,7 +19,7 @@ import {
 	readFileSync,
 	rmSync,
 	writeFileSync,
-} from "node:fs";
+} from 'node:fs'
 import {
 	appendFile,
 	copyFile as fsCopyFile,
@@ -29,8 +29,8 @@ import {
 	mkdir,
 	readdir,
 	rm,
-} from "node:fs/promises";
-import path from "node:path";
+} from 'node:fs/promises'
+import path from 'node:path'
 
 // ============================================
 // ASYNC OPERATIONS - Bun native where beneficial
@@ -48,10 +48,10 @@ import path from "node:path";
  */
 export async function pathExists(filePath: string): Promise<boolean> {
 	try {
-		await fsStat(filePath);
-		return true;
+		await fsStat(filePath)
+		return true
 	} catch {
-		return false;
+		return false
 	}
 }
 
@@ -63,11 +63,11 @@ export async function pathExists(filePath: string): Promise<boolean> {
  * @throws Error if file doesn't exist
  */
 export async function readTextFile(filePath: string): Promise<string> {
-	const file = Bun.file(filePath);
+	const file = Bun.file(filePath)
 	if (!(await file.exists())) {
-		throw new Error(`File not found: ${filePath}`);
+		throw new Error(`File not found: ${filePath}`)
 	}
-	return file.text();
+	return file.text()
 }
 
 /**
@@ -77,11 +77,11 @@ export async function readTextFile(filePath: string): Promise<string> {
  * @returns Parsed JSON content
  */
 export async function readJsonFile<T>(filePath: string): Promise<T> {
-	const file = Bun.file(filePath);
+	const file = Bun.file(filePath)
 	if (!(await file.exists())) {
-		throw new Error(`File not found: ${filePath}`);
+		throw new Error(`File not found: ${filePath}`)
 	}
-	return file.json();
+	return file.json()
 }
 
 /**
@@ -91,7 +91,7 @@ export async function readJsonFile<T>(filePath: string): Promise<T> {
  * @returns File contents as ArrayBuffer
  */
 export async function readBinaryFile(filePath: string): Promise<ArrayBuffer> {
-	return Bun.file(filePath).arrayBuffer();
+	return Bun.file(filePath).arrayBuffer()
 }
 
 /**
@@ -104,7 +104,7 @@ export async function writeTextFile(
 	filePath: string,
 	content: string,
 ): Promise<void> {
-	await Bun.write(filePath, content);
+	await Bun.write(filePath, content)
 }
 
 /**
@@ -119,7 +119,7 @@ export async function writeJsonFile(
 	value: unknown,
 	space = 2,
 ): Promise<void> {
-	await Bun.write(filePath, `${JSON.stringify(value, null, space)}\n`);
+	await Bun.write(filePath, `${JSON.stringify(value, null, space)}\n`)
 }
 
 /**
@@ -132,7 +132,7 @@ export async function writeBinaryFile(
 	filePath: string,
 	content: ArrayBuffer | Uint8Array,
 ): Promise<void> {
-	await Bun.write(filePath, content);
+	await Bun.write(filePath, content)
 }
 
 /**
@@ -141,7 +141,7 @@ export async function writeBinaryFile(
  * @param dirPath - Directory path
  */
 export async function ensureDir(dirPath: string): Promise<void> {
-	await mkdir(dirPath, { recursive: true });
+	await mkdir(dirPath, { recursive: true })
 }
 
 /**
@@ -150,7 +150,7 @@ export async function ensureDir(dirPath: string): Promise<void> {
  * @param filePath - File path
  */
 export async function ensureParentDir(filePath: string): Promise<void> {
-	await mkdir(path.dirname(filePath), { recursive: true });
+	await mkdir(path.dirname(filePath), { recursive: true })
 }
 
 /**
@@ -160,7 +160,7 @@ export async function ensureParentDir(filePath: string): Promise<void> {
  * @param dest - Destination file path
  */
 export async function copyFile(src: string, dest: string): Promise<void> {
-	await Bun.write(dest, Bun.file(src));
+	await Bun.write(dest, Bun.file(src))
 }
 
 /**
@@ -170,7 +170,7 @@ export async function copyFile(src: string, dest: string): Promise<void> {
  * @param dest - Destination file path
  */
 export async function moveFile(src: string, dest: string): Promise<void> {
-	await fsRename(src, dest);
+	await fsRename(src, dest)
 }
 
 /**
@@ -180,7 +180,7 @@ export async function moveFile(src: string, dest: string): Promise<void> {
  * @param newPath - New file path
  */
 export async function rename(oldPath: string, newPath: string): Promise<void> {
-	await fsRename(oldPath, newPath);
+	await fsRename(oldPath, newPath)
 }
 
 /**
@@ -189,7 +189,7 @@ export async function rename(oldPath: string, newPath: string): Promise<void> {
  * @param filePath - File path to delete
  */
 export async function unlink(filePath: string): Promise<void> {
-	await fsUnlink(filePath);
+	await fsUnlink(filePath)
 }
 
 /**
@@ -202,7 +202,7 @@ export async function removeDir(
 	dirPath: string,
 	options?: { recursive?: boolean; force?: boolean },
 ): Promise<void> {
-	await rm(dirPath, { recursive: true, ...options });
+	await rm(dirPath, { recursive: true, ...options })
 }
 
 /**
@@ -212,7 +212,7 @@ export async function removeDir(
  * @returns Array of file/directory names
  */
 export async function readDirAsync(dirPath: string): Promise<string[]> {
-	return readdir(dirPath);
+	return readdir(dirPath)
 }
 
 /**
@@ -222,7 +222,7 @@ export async function readDirAsync(dirPath: string): Promise<string[]> {
  * @returns Array of relative file paths
  */
 export async function readDirRecursive(dirPath: string): Promise<string[]> {
-	return readdir(dirPath, { recursive: true }) as Promise<string[]>;
+	return readdir(dirPath, { recursive: true }) as Promise<string[]>
 }
 
 /**
@@ -235,7 +235,7 @@ export async function appendToFile(
 	filePath: string,
 	content: string,
 ): Promise<void> {
-	await appendFile(filePath, content);
+	await appendFile(filePath, content)
 }
 
 /**
@@ -247,15 +247,15 @@ export async function appendToFile(
 export async function getFileInfo(
 	filePath: string,
 ): Promise<{ size: number; lastModified: number; type: string }> {
-	const file = Bun.file(filePath);
+	const file = Bun.file(filePath)
 	if (!(await file.exists())) {
-		throw new Error(`File not found: ${filePath}`);
+		throw new Error(`File not found: ${filePath}`)
 	}
 	return {
 		size: file.size,
 		lastModified: file.lastModified,
 		type: file.type,
-	};
+	}
 }
 
 /**
@@ -267,11 +267,11 @@ export async function getFileInfo(
 export async function stat(
 	filePath: string,
 ): Promise<{ size: number; mtimeMs: number }> {
-	const s = await fsStat(filePath);
+	const s = await fsStat(filePath)
 	return {
 		size: s.size,
 		mtimeMs: s.mtimeMs,
-	};
+	}
 }
 
 // ============================================
@@ -285,7 +285,7 @@ export async function stat(
  * @returns true if path exists
  */
 export function pathExistsSync(filePath: string): boolean {
-	return existsSync(filePath);
+	return existsSync(filePath)
 }
 
 /**
@@ -297,12 +297,12 @@ export function pathExistsSync(filePath: string): boolean {
  */
 export function readTextFileSync(filePath: string): string {
 	try {
-		return readFileSync(filePath, "utf8");
+		return readFileSync(filePath, 'utf8')
 	} catch (err) {
-		if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-			throw new Error(`File not found: ${filePath}`);
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+			throw new Error(`File not found: ${filePath}`)
 		}
-		throw err;
+		throw err
 	}
 }
 
@@ -313,8 +313,8 @@ export function readTextFileSync(filePath: string): string {
  * @returns Parsed JSON content
  */
 export function readJsonFileSync<T>(filePath: string): T {
-	const text = readTextFileSync(filePath);
-	return JSON.parse(text) as T;
+	const text = readTextFileSync(filePath)
+	return JSON.parse(text) as T
 }
 
 /**
@@ -324,7 +324,7 @@ export function readJsonFileSync<T>(filePath: string): T {
  * @returns File contents as Buffer
  */
 export function readBinaryFileSync(filePath: string): Buffer {
-	return readFileSync(filePath);
+	return readFileSync(filePath)
 }
 
 /**
@@ -334,7 +334,7 @@ export function readBinaryFileSync(filePath: string): Buffer {
  * @param content - Content to write
  */
 export function writeTextFileSync(filePath: string, content: string): void {
-	writeFileSync(filePath, content, "utf8");
+	writeFileSync(filePath, content, 'utf8')
 }
 
 /**
@@ -349,7 +349,7 @@ export function writeJsonFileSync(
 	value: unknown,
 	space = 2,
 ): void {
-	writeFileSync(filePath, `${JSON.stringify(value, null, space)}\n`, "utf8");
+	writeFileSync(filePath, `${JSON.stringify(value, null, space)}\n`, 'utf8')
 }
 
 /**
@@ -362,7 +362,7 @@ export function writeBinaryFileSync(
 	filePath: string,
 	content: Buffer | Uint8Array,
 ): void {
-	writeFileSync(filePath, content);
+	writeFileSync(filePath, content)
 }
 
 /**
@@ -371,7 +371,7 @@ export function writeBinaryFileSync(
  * @param dirPath - Directory path
  */
 export function ensureDirSync(dirPath: string): void {
-	mkdirSync(dirPath, { recursive: true });
+	mkdirSync(dirPath, { recursive: true })
 }
 
 /**
@@ -380,7 +380,7 @@ export function ensureDirSync(dirPath: string): void {
  * @param filePath - File path
  */
 export function ensureParentDirSync(filePath: string): void {
-	mkdirSync(path.dirname(filePath), { recursive: true });
+	mkdirSync(path.dirname(filePath), { recursive: true })
 }
 
 /**
@@ -390,7 +390,7 @@ export function ensureParentDirSync(filePath: string): void {
  * @param dest - Destination file path
  */
 export function copyFileSync(src: string, dest: string): void {
-	fsCopyFileSync(src, dest);
+	fsCopyFileSync(src, dest)
 }
 
 /**
@@ -400,7 +400,7 @@ export function copyFileSync(src: string, dest: string): void {
  * @param dest - Destination file path
  */
 export function moveFileSync(src: string, dest: string): void {
-	fsRenameSync(src, dest);
+	fsRenameSync(src, dest)
 }
 
 /**
@@ -410,7 +410,7 @@ export function moveFileSync(src: string, dest: string): void {
  * @param newPath - New file path
  */
 export function renameSync(oldPath: string, newPath: string): void {
-	fsRenameSync(oldPath, newPath);
+	fsRenameSync(oldPath, newPath)
 }
 
 /**
@@ -419,7 +419,7 @@ export function renameSync(oldPath: string, newPath: string): void {
  * @param filePath - File path to delete
  */
 export function unlinkSync(filePath: string): void {
-	fsUnlinkSync(filePath);
+	fsUnlinkSync(filePath)
 }
 
 /**
@@ -432,7 +432,7 @@ export function removeDirSync(
 	dirPath: string,
 	options?: { recursive?: boolean; force?: boolean },
 ): void {
-	rmSync(dirPath, { recursive: true, ...options });
+	rmSync(dirPath, { recursive: true, ...options })
 }
 
 /**
@@ -442,7 +442,7 @@ export function removeDirSync(
  * @returns Array of file/directory names
  */
 export function readDir(dirPath: string): string[] {
-	return readdirSync(dirPath);
+	return readdirSync(dirPath)
 }
 
 /**
@@ -452,7 +452,7 @@ export function readDir(dirPath: string): string[] {
  * @returns Array of relative file paths
  */
 export function readDirRecursiveSync(dirPath: string): string[] {
-	return readdirSync(dirPath, { recursive: true }) as string[];
+	return readdirSync(dirPath, { recursive: true }) as string[]
 }
 
 /**
@@ -462,7 +462,7 @@ export function readDirRecursiveSync(dirPath: string): string[] {
  * @param content - Content to append
  */
 export function appendToFileSync(filePath: string, content: string): void {
-	appendFileSync(filePath, content, "utf8");
+	appendFileSync(filePath, content, 'utf8')
 }
 
 /**
@@ -472,7 +472,7 @@ export function appendToFileSync(filePath: string, content: string): void {
  * @returns true if path is a directory
  */
 export function isDirectorySync(filePath: string): boolean {
-	return existsSync(filePath) && nodeStatSync(filePath).isDirectory();
+	return existsSync(filePath) && nodeStatSync(filePath).isDirectory()
 }
 
 /**
@@ -482,7 +482,7 @@ export function isDirectorySync(filePath: string): boolean {
  * @returns true if path is a file
  */
 export function isFileSync(filePath: string): boolean {
-	return existsSync(filePath) && nodeStatSync(filePath).isFile();
+	return existsSync(filePath) && nodeStatSync(filePath).isFile()
 }
 
 /**
@@ -492,19 +492,19 @@ export function isFileSync(filePath: string): boolean {
  * @returns Stats object
  */
 export function statSync(filePath: string): {
-	size: number;
-	mtimeMs: number;
-	isDirectory: () => boolean;
-	isFile: () => boolean;
-	isSymbolicLink: () => boolean;
+	size: number
+	mtimeMs: number
+	isDirectory: () => boolean
+	isFile: () => boolean
+	isSymbolicLink: () => boolean
 } {
-	return nodeStatSync(filePath);
+	return nodeStatSync(filePath)
 }
 
 // ============================================
 // BUN-SPECIFIC UTILITIES - Re-exports from specialized modules
 // These are kept here for backwards compatibility
-// Prefer importing from @sidequest/core/hash and @sidequest/core/utils
+// Prefer importing from @side-quest/core/hash and @side-quest/core/utils
 // ============================================
 
 // Re-export hash functions for backwards compatibility
@@ -512,10 +512,10 @@ export {
 	fastHash,
 	sha256,
 	sha256File,
-} from "../hash/index.js";
+} from '../hash/index.js'
 
 // Re-export utils functions for backwards compatibility
-export { deepEquals, safeJsonParse } from "../utils/index.js";
+export { deepEquals, safeJsonParse } from '../utils/index.js'
 
 // ============================================
 // TEMP FILES - useful for CLI tools
@@ -527,13 +527,13 @@ export { deepEquals, safeJsonParse } from "../utils/index.js";
  * @param prefix - Prefix for the directory name
  * @returns Path to the created temp directory
  */
-export function createTempDir(prefix = "temp"): string {
+export function createTempDir(prefix = 'temp'): string {
 	const dir = path.join(
-		process.env.TMPDIR || "/tmp",
+		process.env.TMPDIR || '/tmp',
 		`${prefix}-${crypto.randomUUID()}`,
-	);
-	mkdirSync(dir, { recursive: true });
-	return dir;
+	)
+	mkdirSync(dir, { recursive: true })
+	return dir
 }
 
 /**
@@ -545,13 +545,13 @@ export function createTempDir(prefix = "temp"): string {
  */
 export async function withTempDir<T>(
 	fn: (tempDir: string) => Promise<T>,
-	prefix = "temp",
+	prefix = 'temp',
 ): Promise<T> {
-	const dir = createTempDir(prefix);
+	const dir = createTempDir(prefix)
 	try {
-		return await fn(dir);
+		return await fn(dir)
 	} finally {
-		rmSync(dir, { recursive: true, force: true });
+		rmSync(dir, { recursive: true, force: true })
 	}
 }
 
@@ -564,13 +564,13 @@ export async function withTempDir<T>(
  */
 export function withTempDirSync<T>(
 	fn: (tempDir: string) => T,
-	prefix = "temp",
+	prefix = 'temp',
 ): T {
-	const dir = createTempDir(prefix);
+	const dir = createTempDir(prefix)
 	try {
-		return fn(dir);
+		return fn(dir)
 	} finally {
-		rmSync(dir, { recursive: true, force: true });
+		rmSync(dir, { recursive: true, force: true })
 	}
 }
 
@@ -581,9 +581,9 @@ export function withTempDirSync<T>(
  * @param ext - File extension
  * @returns Path to the temp file
  */
-export function createTempFilePath(prefix = "temp", ext = ""): string {
-	const dir = process.env.TMPDIR || "/tmp";
-	return path.join(dir, `${prefix}-${crypto.randomUUID()}${ext}`);
+export function createTempFilePath(prefix = 'temp', ext = ''): string {
+	const dir = process.env.TMPDIR || '/tmp'
+	return path.join(dir, `${prefix}-${crypto.randomUUID()}${ext}`)
 }
 
 /**
@@ -599,7 +599,7 @@ export {
 	type TempFileExecutionResult,
 	withTempJsonFile,
 	withTempJsonFileSync,
-} from "./temp-json.js";
+} from './temp-json.js'
 
 // ============================================
 // ATOMIC WRITES - safe for concurrent access
@@ -616,9 +616,9 @@ export async function writeTextFileAtomic(
 	filePath: string,
 	content: string,
 ): Promise<void> {
-	const tempPath = `${filePath}.${crypto.randomUUID()}.tmp`;
-	await Bun.write(tempPath, content);
-	await fsRename(tempPath, filePath);
+	const tempPath = `${filePath}.${crypto.randomUUID()}.tmp`
+	await Bun.write(tempPath, content)
+	await fsRename(tempPath, filePath)
 }
 
 /**
@@ -633,10 +633,7 @@ export async function writeJsonFileAtomic(
 	value: unknown,
 	space = 2,
 ): Promise<void> {
-	await writeTextFileAtomic(
-		filePath,
-		`${JSON.stringify(value, null, space)}\n`,
-	);
+	await writeTextFileAtomic(filePath, `${JSON.stringify(value, null, space)}\n`)
 }
 
 /**
@@ -649,9 +646,9 @@ export function writeTextFileSyncAtomic(
 	filePath: string,
 	content: string,
 ): void {
-	const tempPath = `${filePath}.${crypto.randomUUID()}.tmp`;
-	writeFileSync(tempPath, content, "utf8");
-	fsRenameSync(tempPath, filePath);
+	const tempPath = `${filePath}.${crypto.randomUUID()}.tmp`
+	writeFileSync(tempPath, content, 'utf8')
+	fsRenameSync(tempPath, filePath)
 }
 
 /**
@@ -666,7 +663,7 @@ export function writeJsonFileSyncAtomic(
 	value: unknown,
 	space = 2,
 ): void {
-	writeTextFileSyncAtomic(filePath, `${JSON.stringify(value, null, space)}\n`);
+	writeTextFileSyncAtomic(filePath, `${JSON.stringify(value, null, space)}\n`)
 }
 
 // ============================================
@@ -681,11 +678,11 @@ export function writeJsonFileSyncAtomic(
  * @returns Parsed JSON or default value
  */
 export function readJsonFileOrDefault<T>(filePath: string, defaultValue: T): T {
-	if (!existsSync(filePath)) return defaultValue;
+	if (!existsSync(filePath)) return defaultValue
 	try {
-		return readJsonFileSync(filePath);
+		return readJsonFileSync(filePath)
 	} catch {
-		return defaultValue;
+		return defaultValue
 	}
 }
 
@@ -700,13 +697,13 @@ export function findUpSync(
 	filename: string,
 	startDir: string = process.cwd(),
 ): string | null {
-	let dir = startDir;
+	let dir = startDir
 	while (true) {
-		const filePath = path.join(dir, filename);
-		if (existsSync(filePath)) return filePath;
-		const parent = path.dirname(dir);
-		if (parent === dir) return null;
-		dir = parent;
+		const filePath = path.join(dir, filename)
+		if (existsSync(filePath)) return filePath
+		const parent = path.dirname(dir)
+		if (parent === dir) return null
+		dir = parent
 	}
 }
 
@@ -716,9 +713,11 @@ export function findUpSync(
  * @param startDir - Directory to start search (default: cwd)
  * @returns Path to project root, or null if not found
  */
-export function findProjectRoot(startDir: string = process.cwd()): string | null {
-	const pkgPath = findUpSync("package.json", startDir);
-	return pkgPath ? path.dirname(pkgPath) : null;
+export function findProjectRoot(
+	startDir: string = process.cwd(),
+): string | null {
+	const pkgPath = findUpSync('package.json', startDir)
+	return pkgPath ? path.dirname(pkgPath) : null
 }
 
 /**
@@ -727,10 +726,10 @@ export function findProjectRoot(startDir: string = process.cwd()): string | null
  * @param filePath - Path to file
  * @param defaultContent - Content to write if file doesn't exist
  */
-export function ensureFileSync(filePath: string, defaultContent = ""): void {
+export function ensureFileSync(filePath: string, defaultContent = ''): void {
 	if (!existsSync(filePath)) {
-		ensureParentDirSync(filePath);
-		writeFileSync(filePath, defaultContent, "utf8");
+		ensureParentDirSync(filePath)
+		writeFileSync(filePath, defaultContent, 'utf8')
 	}
 }
 
@@ -741,7 +740,7 @@ export function ensureFileSync(filePath: string, defaultContent = ""): void {
  * @returns Array of non-empty lines
  */
 export function readLinesSync(filePath: string): string[] {
-	return readTextFileSync(filePath).split("\n").filter(Boolean);
+	return readTextFileSync(filePath).split('\n').filter(Boolean)
 }
 
 /**
@@ -751,7 +750,7 @@ export function readLinesSync(filePath: string): string[] {
  * @param lines - Lines to write
  */
 export function writeLinesSync(filePath: string, lines: string[]): void {
-	writeFileSync(filePath, `${lines.join("\n")}\n`, "utf8");
+	writeFileSync(filePath, `${lines.join('\n')}\n`, 'utf8')
 }
 
 // Note: safeJsonParse is re-exported from utils above for backwards compatibility
@@ -770,7 +769,7 @@ export {
 	fsCopyFileSync as nodeCopyFileSync,
 	fsRenameSync as nodeRenameSync,
 	fsUnlinkSync as nodeUnlinkSync,
-};
+}
 
 export {
 	mkdir,
@@ -780,7 +779,7 @@ export {
 	fsRename as nodeRename,
 	fsUnlink as nodeUnlink,
 	fsStat as nodeStat,
-};
+}
 
 // ============================================
 // RE-EXPORTS - New utility modules
@@ -791,49 +790,49 @@ export {
 	createBackup,
 	restoreFromBackup,
 	safeReadJSON,
-} from "./backup.js";
+} from './backup.js'
 // Cache directory utilities
 export {
 	ensureCacheDir,
 	getCacheStats,
 	isCachePopulated,
-} from "./cache.js";
+} from './cache.js'
 // Config file detection utilities
 export {
 	type ConfigAtRootResult,
 	findNearestConfig,
 	hasConfigAtRoot,
 	type NearestConfigResult,
-} from "./config.js";
+} from './config.js'
 // Path utilities
 export {
 	expandTilde,
 	matchesDir,
 	normalizePath,
 	normalizePathFragment,
-} from "./path.js";
+} from './path.js'
 // Path safety and validation utilities
 export {
 	sanitizePattern,
 	validateFilePath,
 	validatePathSafety,
-} from "./safety.js";
+} from './safety.js'
 // Sandbox path security utilities
 export {
 	resolveSandboxedPath,
 	type SandboxedPath,
 	validateConfigPath,
 	validateFilenameForSubprocess,
-} from "./sandbox.js";
+} from './sandbox.js'
 // File statistics utilities
 export {
 	getFileAgeHours,
 	getFileSizeMB,
 	isFileStale,
-} from "./stats.js";
+} from './stats.js'
 // Directory walking utilities
 export {
 	type FileVisitor,
 	type WalkDirectoryOptions,
 	walkDirectory,
-} from "./walk.js";
+} from './walk.js'

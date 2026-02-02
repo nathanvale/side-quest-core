@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { formatCurrency, parsePrice } from "@sidequest/core/formatters";
+ * import { formatCurrency, parsePrice } from "@side-quest/core/formatters";
  *
  * formatCurrency(42.50); // "$42.50"
  * formatCurrency(100);   // "$100.00"
@@ -37,7 +37,7 @@
  * ```
  */
 export function formatCurrency(amount: number): string {
-	return `$${amount.toFixed(2)}`;
+	return `$${amount.toFixed(2)}`
 }
 
 /**
@@ -74,15 +74,15 @@ export function formatCurrency(amount: number): string {
  */
 export function parsePrice(priceText: string): number {
 	// Remove $, commas, and whitespace
-	const cleaned = priceText.replace(/[$,\s]/g, "");
+	const cleaned = priceText.replace(/[$,\s]/g, '')
 
 	// Parse to number
-	const price = Number.parseFloat(cleaned);
+	const price = Number.parseFloat(cleaned)
 
 	// Validate result
 	if (Number.isNaN(price)) {
-		throw new Error(`Invalid price format: "${priceText}"`);
+		throw new Error(`Invalid price format: "${priceText}"`)
 	}
 
-	return price;
+	return price
 }

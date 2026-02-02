@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { deepEquals, sleep, retry, debounce } from "@sidequest/core/utils";
+ * import { deepEquals, sleep, retry, debounce } from "@side-quest/core/utils";
  *
  * // Deep comparison
  * deepEquals({ a: 1 }, { a: 1 }); // true
@@ -23,7 +23,7 @@
 // ============================================================================
 
 /** Function type for retry, debounce, throttle */
-export type AnyFunction<T = unknown> = (...args: unknown[]) => T;
+export type AnyFunction<T = unknown> = (...args: unknown[]) => T
 
 // ============================================================================
 // Deep comparison & cloning
@@ -46,7 +46,7 @@ export type AnyFunction<T = unknown> = (...args: unknown[]) => T;
  * ```
  */
 export function deepEquals(a: unknown, b: unknown, strict = false): boolean {
-	return Bun.deepEquals(a, b, strict);
+	return Bun.deepEquals(a, b, strict)
 }
 
 /**
@@ -65,7 +65,7 @@ export function deepEquals(a: unknown, b: unknown, strict = false): boolean {
  * ```
  */
 export function deepClone<T>(value: T): T {
-	return JSON.parse(JSON.stringify(value));
+	return JSON.parse(JSON.stringify(value))
 }
 
 /**
@@ -77,7 +77,7 @@ export function deepClone<T>(value: T): T {
  * @returns Deep clone of value
  */
 export function structuredClone<T>(value: T): T {
-	return globalThis.structuredClone(value);
+	return globalThis.structuredClone(value)
 }
 
 // ============================================================================
@@ -96,7 +96,7 @@ export function structuredClone<T>(value: T): T {
  * ```
  */
 export function sleep(ms: number): Promise<void> {
-	return Bun.sleep(ms);
+	return Bun.sleep(ms)
 }
 
 /**
@@ -112,7 +112,7 @@ export function sleep(ms: number): Promise<void> {
  * ```
  */
 export function sleepSync(ms: number): void {
-	Bun.sleepSync(ms);
+	Bun.sleepSync(ms)
 }
 
 // ============================================================================
@@ -138,7 +138,7 @@ export function sleepSync(ms: number): void {
  * ```
  */
 export function peekPromise<T>(promise: Promise<T>): T | Promise<T> {
-	return Bun.peek(promise);
+	return Bun.peek(promise)
 }
 
 /**
@@ -158,8 +158,8 @@ export function peekPromise<T>(promise: Promise<T>): T | Promise<T> {
  * ```
  */
 export function isPromiseResolved<T>(promise: Promise<T>): boolean {
-	const peeked = Bun.peek(promise);
-	return peeked !== promise && !(peeked instanceof Error);
+	const peeked = Bun.peek(promise)
+	return peeked !== promise && !(peeked instanceof Error)
 }
 
 /**
@@ -169,21 +169,21 @@ export function isPromiseResolved<T>(promise: Promise<T>): boolean {
  * @returns Object with status and value/error if available
  */
 export function getPromiseStatus<T>(promise: Promise<T>): {
-	status: "pending" | "fulfilled" | "rejected";
-	value?: T;
-	reason?: Error;
+	status: 'pending' | 'fulfilled' | 'rejected'
+	value?: T
+	reason?: Error
 } {
-	const peeked = Bun.peek(promise);
+	const peeked = Bun.peek(promise)
 
 	if (peeked === promise) {
-		return { status: "pending" };
+		return { status: 'pending' }
 	}
 
 	if (peeked instanceof Error) {
-		return { status: "rejected", reason: peeked };
+		return { status: 'rejected', reason: peeked }
 	}
 
-	return { status: "fulfilled", value: peeked as T };
+	return { status: 'fulfilled', value: peeked as T }
 }
 
 // ============================================================================
@@ -201,7 +201,7 @@ export function getPromiseStatus<T>(promise: Promise<T>): {
  * ```
  */
 export function uuid(): string {
-	return crypto.randomUUID();
+	return crypto.randomUUID()
 }
 
 /**
@@ -217,11 +217,11 @@ export function uuid(): string {
  * ```
  */
 export function shortId(length = 8): string {
-	const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-	const bytes = crypto.getRandomValues(new Uint8Array(length));
+	const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+	const bytes = crypto.getRandomValues(new Uint8Array(length))
 	return Array.from(bytes)
 		.map((b) => chars[b % chars.length])
-		.join("");
+		.join('')
 }
 
 /**
@@ -240,11 +240,11 @@ export function shortId(length = 8): string {
  */
 export function nanoId(length = 21): string {
 	const chars =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
-	const bytes = crypto.getRandomValues(new Uint8Array(length));
+		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
+	const bytes = crypto.getRandomValues(new Uint8Array(length))
 	return Array.from(bytes)
 		.map((b) => chars[b % chars.length])
-		.join("");
+		.join('')
 }
 
 // ============================================================================
@@ -266,9 +266,9 @@ export function nanoId(length = 21): string {
  */
 export function safeJsonParse<T>(content: string, fallback: T): T {
 	try {
-		return JSON.parse(content);
+		return JSON.parse(content)
 	} catch {
-		return fallback;
+		return fallback
 	}
 }
 
@@ -289,21 +289,21 @@ export function safeJsonParse<T>(content: string, fallback: T): T {
  * ```
  */
 export function safeJsonStringify(value: unknown, indent?: number): string {
-	const seen = new WeakSet();
+	const seen = new WeakSet()
 
 	return JSON.stringify(
 		value,
 		(_key, val) => {
-			if (typeof val === "object" && val !== null) {
+			if (typeof val === 'object' && val !== null) {
 				if (seen.has(val)) {
-					return "[Circular]";
+					return '[Circular]'
 				}
-				seen.add(val);
+				seen.add(val)
 			}
-			return val;
+			return val
 		},
 		indent,
-	);
+	)
 }
 
 // ============================================================================
@@ -316,7 +316,7 @@ export function safeJsonStringify(value: unknown, indent?: number): string {
  * @returns True if Bun runtime is detected
  */
 export function isBun(): boolean {
-	return typeof Bun !== "undefined";
+	return typeof Bun !== 'undefined'
 }
 
 /**
@@ -325,7 +325,7 @@ export function isBun(): boolean {
  * @returns Version string or null
  */
 export function bunVersion(): string | null {
-	return typeof Bun !== "undefined" ? Bun.version : null;
+	return typeof Bun !== 'undefined' ? Bun.version : null
 }
 
 /**
@@ -337,9 +337,9 @@ export function bunVersion(): string | null {
  */
 export function isDev(): boolean {
 	return (
-		process.env.NODE_ENV === "development" ||
-		process.env.BUN_ENV === "development"
-	);
+		process.env.NODE_ENV === 'development' ||
+		process.env.BUN_ENV === 'development'
+	)
 }
 
 /**
@@ -349,9 +349,9 @@ export function isDev(): boolean {
  */
 export function isProd(): boolean {
 	return (
-		process.env.NODE_ENV === "production" ||
-		process.env.BUN_ENV === "production"
-	);
+		process.env.NODE_ENV === 'production' ||
+		process.env.BUN_ENV === 'production'
+	)
 }
 
 /**
@@ -361,10 +361,10 @@ export function isProd(): boolean {
  */
 export function isTest(): boolean {
 	return (
-		process.env.NODE_ENV === "test" ||
-		process.env.BUN_ENV === "test" ||
-		typeof Bun !== "undefined"
-	);
+		process.env.NODE_ENV === 'test' ||
+		process.env.BUN_ENV === 'test' ||
+		typeof Bun !== 'undefined'
+	)
 }
 
 // ============================================================================
@@ -374,19 +374,19 @@ export function isTest(): boolean {
 /** Options for retry function */
 export interface RetryOptions {
 	/** Maximum number of attempts (default: 3) */
-	maxAttempts?: number;
+	maxAttempts?: number
 	/** Initial delay between retries in ms (default: 100) */
-	initialDelay?: number;
+	initialDelay?: number
 	/** Maximum delay between retries in ms (default: 10000) */
-	maxDelay?: number;
+	maxDelay?: number
 	/** Backoff multiplier (default: 2) */
-	backoff?: number;
+	backoff?: number
 	/** Whether to add jitter to delays (default: true) */
-	jitter?: boolean;
+	jitter?: boolean
 	/** Predicate to determine if error should be retried */
-	shouldRetry?: (error: Error) => boolean;
+	shouldRetry?: (error: Error) => boolean
 	/** Callback on each retry */
-	onRetry?: (error: Error, attempt: number) => void;
+	onRetry?: (error: Error, attempt: number) => void
 }
 
 /**
@@ -421,33 +421,33 @@ export async function retry<T>(
 		jitter = true,
 		shouldRetry = () => true,
 		onRetry,
-	} = options ?? {};
+	} = options ?? {}
 
-	let lastError: Error | null = null;
-	let delay = initialDelay;
+	let lastError: Error | null = null
+	let delay = initialDelay
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
-			return await fn();
+			return await fn()
 		} catch (error) {
-			lastError = error instanceof Error ? error : new Error(String(error));
+			lastError = error instanceof Error ? error : new Error(String(error))
 
 			if (attempt === maxAttempts || !shouldRetry(lastError)) {
-				throw lastError;
+				throw lastError
 			}
 
-			onRetry?.(lastError, attempt);
+			onRetry?.(lastError, attempt)
 
 			// Add jitter
-			const jitterAmount = jitter ? Math.random() * delay * 0.2 : 0;
-			await sleep(delay + jitterAmount);
+			const jitterAmount = jitter ? Math.random() * delay * 0.2 : 0
+			await sleep(delay + jitterAmount)
 
 			// Increase delay with backoff
-			delay = Math.min(delay * backoff, maxDelay);
+			delay = Math.min(delay * backoff, maxDelay)
 		}
 	}
 
-	throw lastError;
+	throw lastError
 }
 
 // ============================================================================
@@ -476,18 +476,18 @@ export function debounce<T extends AnyFunction>(
 	fn: T,
 	wait: number,
 ): (...args: Parameters<T>) => void {
-	let timeoutId: ReturnType<typeof setTimeout> | null = null;
+	let timeoutId: ReturnType<typeof setTimeout> | null = null
 
 	return (...args: Parameters<T>) => {
 		if (timeoutId) {
-			clearTimeout(timeoutId);
+			clearTimeout(timeoutId)
 		}
 
 		timeoutId = setTimeout(() => {
-			fn(...args);
-			timeoutId = null;
-		}, wait);
-	};
+			fn(...args)
+			timeoutId = null
+		}, wait)
+	}
 }
 
 /**
@@ -511,24 +511,24 @@ export function throttle<T extends AnyFunction>(
 	fn: T,
 	limit: number,
 ): (...args: Parameters<T>) => void {
-	let lastRun = 0;
-	let timeoutId: ReturnType<typeof setTimeout> | null = null;
+	let lastRun = 0
+	let timeoutId: ReturnType<typeof setTimeout> | null = null
 
 	return (...args: Parameters<T>) => {
-		const now = Date.now();
-		const timeSinceLastRun = now - lastRun;
+		const now = Date.now()
+		const timeSinceLastRun = now - lastRun
 
 		if (timeSinceLastRun >= limit) {
-			lastRun = now;
-			fn(...args);
+			lastRun = now
+			fn(...args)
 		} else if (!timeoutId) {
 			timeoutId = setTimeout(() => {
-				lastRun = Date.now();
-				timeoutId = null;
-				fn(...args);
-			}, limit - timeSinceLastRun);
+				lastRun = Date.now()
+				timeoutId = null
+				fn(...args)
+			}, limit - timeSinceLastRun)
 		}
-	};
+	}
 }
 
 // ============================================================================
@@ -551,13 +551,13 @@ export function pick<T extends object, K extends keyof T>(
 	obj: T,
 	keys: K[],
 ): Pick<T, K> {
-	const result = {} as Pick<T, K>;
+	const result = {} as Pick<T, K>
 	for (const key of keys) {
 		if (key in obj) {
-			result[key] = obj[key];
+			result[key] = obj[key]
 		}
 	}
-	return result;
+	return result
 }
 
 /**
@@ -576,11 +576,11 @@ export function omit<T extends object, K extends keyof T>(
 	obj: T,
 	keys: K[],
 ): Omit<T, K> {
-	const result = { ...obj };
+	const result = { ...obj }
 	for (const key of keys) {
-		delete result[key];
+		delete result[key]
 	}
-	return result;
+	return result
 }
 
 /**
@@ -592,11 +592,11 @@ export function omit<T extends object, K extends keyof T>(
 export function isPlainObject(
 	value: unknown,
 ): value is Record<string, unknown> {
-	if (typeof value !== "object" || value === null) {
-		return false;
+	if (typeof value !== 'object' || value === null) {
+		return false
 	}
-	const proto = Object.getPrototypeOf(value);
-	return proto === Object.prototype || proto === null;
+	const proto = Object.getPrototypeOf(value)
+	return proto === Object.prototype || proto === null
 }
 
 // ============================================================================
@@ -616,11 +616,11 @@ export function isPlainObject(
  * ```
  */
 export function chunk<T>(arr: T[], size: number): T[][] {
-	const result: T[][] = [];
+	const result: T[][] = []
 	for (let i = 0; i < arr.length; i += size) {
-		result.push(arr.slice(i, i + size));
+		result.push(arr.slice(i, i + size))
 	}
-	return result;
+	return result
 }
 
 /**
@@ -635,7 +635,7 @@ export function chunk<T>(arr: T[], size: number): T[][] {
  * ```
  */
 export function unique<T>(arr: T[]): T[] {
-	return [...new Set(arr)];
+	return [...new Set(arr)]
 }
 
 /**
@@ -660,15 +660,15 @@ export function groupBy<T, K extends string | number>(
 	arr: T[],
 	keyFn: (item: T) => K,
 ): Record<K, T[]> {
-	const result = {} as Record<K, T[]>;
+	const result = {} as Record<K, T[]>
 	for (const item of arr) {
-		const key = keyFn(item);
+		const key = keyFn(item)
 		if (!result[key]) {
-			result[key] = [];
+			result[key] = []
 		}
-		result[key].push(item);
+		result[key].push(item)
 	}
-	return result;
+	return result
 }
 
 /**
@@ -683,19 +683,19 @@ export function groupBy<T, K extends string | number>(
  * ```
  */
 export function shuffle<T>(arr: T[]): T[] {
-	const result = [...arr];
+	const result = [...arr]
 	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[result[i], result[j]] = [result[j] as T, result[i] as T];
+		const j = Math.floor(Math.random() * (i + 1))
+		;[result[i], result[j]] = [result[j] as T, result[i] as T]
 	}
-	return result;
+	return result
 }
 
 // ============================================================================
 // String utilities
 // ============================================================================
 
-export { capitalize } from "./string.js";
+export { capitalize } from './string.js'
 
 /**
  * Truncate a string to a maximum length
@@ -714,12 +714,12 @@ export { capitalize } from "./string.js";
 export function truncate(
 	str: string,
 	maxLength: number,
-	suffix = "...",
+	suffix = '...',
 ): string {
 	if (str.length <= maxLength) {
-		return str;
+		return str
 	}
-	return str.slice(0, maxLength - suffix.length) + suffix;
+	return str.slice(0, maxLength - suffix.length) + suffix
 }
 
 /**
@@ -736,8 +736,8 @@ export function truncate(
  */
 export function camelCase(str: string): string {
 	return str
-		.replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ""))
-		.replace(/^./, (c) => c.toLowerCase());
+		.replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
+		.replace(/^./, (c) => c.toLowerCase())
 }
 
 /**
@@ -754,9 +754,9 @@ export function camelCase(str: string): string {
  */
 export function kebabCase(str: string): string {
 	return str
-		.replace(/([a-z])([A-Z])/g, "$1-$2")
-		.replace(/[\s_]+/g, "-")
-		.toLowerCase();
+		.replace(/([a-z])([A-Z])/g, '$1-$2')
+		.replace(/[\s_]+/g, '-')
+		.toLowerCase()
 }
 
 /**
@@ -773,9 +773,9 @@ export function kebabCase(str: string): string {
  */
 export function snakeCase(str: string): string {
 	return str
-		.replace(/([a-z])([A-Z])/g, "$1_$2")
-		.replace(/[-\s]+/g, "_")
-		.toLowerCase();
+		.replace(/([a-z])([A-Z])/g, '$1_$2')
+		.replace(/[-\s]+/g, '_')
+		.toLowerCase()
 }
 
 // ============================================================================
@@ -808,7 +808,7 @@ export function snakeCase(str: string): string {
  */
 export function getErrorMessage(error: unknown): string {
 	if (error instanceof Error) {
-		return error.message;
+		return error.message
 	}
-	return String(error);
+	return String(error)
 }

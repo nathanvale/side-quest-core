@@ -8,7 +8,7 @@
  * ## Usage
  *
  * ```typescript
- * import { runWithContext, getCurrentContext, createTraceContext } from "@sidequest/core/instrumentation";
+ * import { runWithContext, getCurrentContext, createTraceContext } from "@side-quest/core/instrumentation";
  *
  * // Create a new trace context
  * const ctx = createTraceContext();
@@ -34,8 +34,8 @@
  * @module core/instrumentation/context
  */
 
-import { AsyncLocalStorage } from "node:async_hooks";
-import { randomUUID } from "node:crypto";
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { randomUUID } from 'node:crypto'
 
 /**
  * Trace context for correlation ID propagation.
@@ -47,18 +47,18 @@ import { randomUUID } from "node:crypto";
  */
 export interface TraceContext {
 	/** Current operation's correlation ID (span_id in W3C terms) */
-	cid: string;
+	cid: string
 	/** Parent operation's correlation ID (parent_span_id in W3C terms) */
-	parentCid?: string;
+	parentCid?: string
 	/** Session-level correlation ID (trace_id in W3C terms) */
-	sessionCid?: string;
+	sessionCid?: string
 }
 
 /**
  * AsyncLocalStorage instance for trace context propagation.
  * This enables automatic context inheritance across async boundaries.
  */
-const asyncLocalStorage = new AsyncLocalStorage<TraceContext>();
+const asyncLocalStorage = new AsyncLocalStorage<TraceContext>()
 
 /**
  * Generate a short correlation ID suitable for logging.
@@ -75,7 +75,7 @@ const asyncLocalStorage = new AsyncLocalStorage<TraceContext>();
  * ```
  */
 export function generateCorrelationId(): string {
-	return randomUUID().replace(/-/g, "").slice(0, 8);
+	return randomUUID().replace(/-/g, '').slice(0, 8)
 }
 
 /**
@@ -106,14 +106,14 @@ export function generateCorrelationId(): string {
 export function createTraceContext(
 	options?: Partial<TraceContext>,
 ): TraceContext {
-	const currentContext = asyncLocalStorage.getStore();
-	const cid = options?.cid ?? generateCorrelationId();
+	const currentContext = asyncLocalStorage.getStore()
+	const cid = options?.cid ?? generateCorrelationId()
 
 	// Inherit from current context if available
-	const parentCid = options?.parentCid ?? currentContext?.cid;
-	const sessionCid = options?.sessionCid ?? currentContext?.sessionCid ?? cid; // Root context uses cid as sessionCid
+	const parentCid = options?.parentCid ?? currentContext?.cid
+	const sessionCid = options?.sessionCid ?? currentContext?.sessionCid ?? cid // Root context uses cid as sessionCid
 
-	return { cid, parentCid, sessionCid };
+	return { cid, parentCid, sessionCid }
 }
 
 /**
@@ -137,7 +137,7 @@ export function createTraceContext(
  * ```
  */
 export function getCurrentContext(): TraceContext | undefined {
-	return asyncLocalStorage.getStore();
+	return asyncLocalStorage.getStore()
 }
 
 /**
@@ -164,7 +164,7 @@ export function getCurrentContext(): TraceContext | undefined {
  * ```
  */
 export function runWithContext<T>(context: TraceContext, fn: () => T): T {
-	return asyncLocalStorage.run(context, fn);
+	return asyncLocalStorage.run(context, fn)
 }
 
 /**
@@ -191,7 +191,7 @@ export async function runWithContextAsync<T>(
 	context: TraceContext,
 	fn: () => Promise<T>,
 ): Promise<T> {
-	return asyncLocalStorage.run(context, fn);
+	return asyncLocalStorage.run(context, fn)
 }
 
 /**
@@ -217,8 +217,8 @@ export async function runWithContextAsync<T>(
  * ```
  */
 export function withChildContext<T>(fn: () => T): T {
-	const childContext = createTraceContext();
-	return runWithContext(childContext, fn);
+	const childContext = createTraceContext()
+	return runWithContext(childContext, fn)
 }
 
 /**
@@ -231,6 +231,6 @@ export function withChildContext<T>(fn: () => T): T {
 export async function withChildContextAsync<T>(
 	fn: () => Promise<T>,
 ): Promise<T> {
-	const childContext = createTraceContext();
-	return runWithContextAsync(childContext, fn);
+	const childContext = createTraceContext()
+	return runWithContextAsync(childContext, fn)
 }

@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { getLanguageForExtension } from "@sidequest/core/formatters/syntax";
+ * import { getLanguageForExtension } from "@side-quest/core/formatters/syntax";
  *
  * getLanguageForExtension("ts"); // "typescript"
  * getLanguageForExtension(".js"); // "javascript"
@@ -21,58 +21,58 @@
  */
 const EXTENSION_MAP: Record<string, string> = {
 	// JavaScript/TypeScript
-	ts: "typescript",
-	tsx: "tsx",
-	js: "javascript",
-	jsx: "jsx",
+	ts: 'typescript',
+	tsx: 'tsx',
+	js: 'javascript',
+	jsx: 'jsx',
 
 	// Common languages
-	py: "python",
-	rb: "ruby",
-	go: "go",
-	rs: "rust",
-	java: "java",
-	kt: "kotlin",
-	swift: "swift",
+	py: 'python',
+	rb: 'ruby',
+	go: 'go',
+	rs: 'rust',
+	java: 'java',
+	kt: 'kotlin',
+	swift: 'swift',
 
 	// C family
-	c: "c",
-	cpp: "cpp",
-	h: "c",
-	hpp: "cpp",
-	cs: "csharp",
+	c: 'c',
+	cpp: 'cpp',
+	h: 'c',
+	hpp: 'cpp',
+	cs: 'csharp',
 
 	// Web & scripting
-	php: "php",
-	sh: "bash",
-	bash: "bash",
-	zsh: "zsh",
-	fish: "fish",
-	ps1: "powershell",
+	php: 'php',
+	sh: 'bash',
+	bash: 'bash',
+	zsh: 'zsh',
+	fish: 'fish',
+	ps1: 'powershell',
 
 	// Data formats
-	json: "json",
-	yaml: "yaml",
-	yml: "yaml",
-	toml: "toml",
-	xml: "xml",
+	json: 'json',
+	yaml: 'yaml',
+	yml: 'yaml',
+	toml: 'toml',
+	xml: 'xml',
 
 	// Stylesheets
-	html: "html",
-	css: "css",
-	scss: "scss",
-	less: "less",
+	html: 'html',
+	css: 'css',
+	scss: 'scss',
+	less: 'less',
 
 	// Query & config
-	sql: "sql",
-	md: "markdown",
-	mdx: "mdx",
-	graphql: "graphql",
-	gql: "graphql",
-	proto: "protobuf",
-	tf: "hcl",
-	hcl: "hcl",
-};
+	sql: 'sql',
+	md: 'markdown',
+	mdx: 'mdx',
+	graphql: 'graphql',
+	gql: 'graphql',
+	proto: 'protobuf',
+	tf: 'hcl',
+	hcl: 'hcl',
+}
 
 /**
  * Get language identifier for a file extension
@@ -94,6 +94,6 @@ const EXTENSION_MAP: Record<string, string> = {
  * ```
  */
 export function getLanguageForExtension(ext: string): string {
-	const normalized = ext.toLowerCase().replace(/^\./, "");
-	return EXTENSION_MAP[normalized] || "text";
+	const normalized = ext.toLowerCase().replace(/^\./, '')
+	return EXTENSION_MAP[normalized] || 'text'
 }

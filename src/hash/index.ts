@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { sha256, fastHash, hmacSha256 } from "@sidequest/core/hash";
+ * import { sha256, fastHash, hmacSha256 } from "@side-quest/core/hash";
  *
  * // Cryptographic hash
  * const hash = sha256("Hello, World!");
@@ -35,9 +35,9 @@
  * ```
  */
 export function sha256(content: string): string {
-	const hasher = new Bun.CryptoHasher("sha256");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('sha256')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 /**
@@ -47,9 +47,9 @@ export function sha256(content: string): string {
  * @returns Hex-encoded SHA256 hash
  */
 export function sha256Binary(content: ArrayBuffer | Uint8Array): string {
-	const hasher = new Bun.CryptoHasher("sha256");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('sha256')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 /**
@@ -64,8 +64,8 @@ export function sha256Binary(content: ArrayBuffer | Uint8Array): string {
  * ```
  */
 export async function sha256File(filePath: string): Promise<string> {
-	const buffer = await Bun.file(filePath).arrayBuffer();
-	return sha256Binary(buffer);
+	const buffer = await Bun.file(filePath).arrayBuffer()
+	return sha256Binary(buffer)
 }
 
 // ============================================================================
@@ -79,9 +79,9 @@ export async function sha256File(filePath: string): Promise<string> {
  * @returns Hex-encoded SHA512 hash
  */
 export function sha512(content: string): string {
-	const hasher = new Bun.CryptoHasher("sha512");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('sha512')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 /**
@@ -91,9 +91,9 @@ export function sha512(content: string): string {
  * @returns Hex-encoded SHA512 hash
  */
 export function sha512Binary(content: ArrayBuffer | Uint8Array): string {
-	const hasher = new Bun.CryptoHasher("sha512");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('sha512')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 // ============================================================================
@@ -107,9 +107,9 @@ export function sha512Binary(content: ArrayBuffer | Uint8Array): string {
  * @returns Hex-encoded BLAKE2b-256 hash
  */
 export function blake2b256(content: string): string {
-	const hasher = new Bun.CryptoHasher("blake2b256");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('blake2b256')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 /**
@@ -119,9 +119,9 @@ export function blake2b256(content: string): string {
  * @returns Hex-encoded BLAKE2b-512 hash
  */
 export function blake2b512(content: string): string {
-	const hasher = new Bun.CryptoHasher("blake2b512");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('blake2b512')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 // ============================================================================
@@ -135,9 +135,9 @@ export function blake2b512(content: string): string {
  * @returns Hex-encoded MD5 hash
  */
 export function md5(content: string): string {
-	const hasher = new Bun.CryptoHasher("md5");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('md5')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 /**
@@ -147,9 +147,9 @@ export function md5(content: string): string {
  * @returns Hex-encoded MD5 hash
  */
 export function md5Binary(content: ArrayBuffer | Uint8Array): string {
-	const hasher = new Bun.CryptoHasher("md5");
-	hasher.update(content);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('md5')
+	hasher.update(content)
+	return hasher.digest('hex')
 }
 
 // ============================================================================
@@ -169,9 +169,9 @@ export function md5Binary(content: ArrayBuffer | Uint8Array): string {
  * ```
  */
 export function hmacSha256(key: string, message: string): string {
-	const hasher = new Bun.CryptoHasher("sha256", key);
-	hasher.update(message);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('sha256', key)
+	hasher.update(message)
+	return hasher.digest('hex')
 }
 
 /**
@@ -182,9 +182,9 @@ export function hmacSha256(key: string, message: string): string {
  * @returns Hex-encoded HMAC
  */
 export function hmacSha512(key: string, message: string): string {
-	const hasher = new Bun.CryptoHasher("sha512", key);
-	hasher.update(message);
-	return hasher.digest("hex");
+	const hasher = new Bun.CryptoHasher('sha512', key)
+	hasher.update(message)
+	return hasher.digest('hex')
 }
 
 /**
@@ -200,21 +200,19 @@ export function verifyHmac(
 	key: string,
 	message: string,
 	hmac: string,
-	algorithm: "sha256" | "sha512" = "sha256",
+	algorithm: 'sha256' | 'sha512' = 'sha256',
 ): boolean {
 	const expected =
-		algorithm === "sha256"
-			? hmacSha256(key, message)
-			: hmacSha512(key, message);
+		algorithm === 'sha256' ? hmacSha256(key, message) : hmacSha512(key, message)
 
 	// Constant-time comparison
-	if (expected.length !== hmac.length) return false;
+	if (expected.length !== hmac.length) return false
 
-	let result = 0;
+	let result = 0
 	for (let i = 0; i < expected.length; i++) {
-		result |= expected.charCodeAt(i) ^ hmac.charCodeAt(i);
+		result |= expected.charCodeAt(i) ^ hmac.charCodeAt(i)
 	}
-	return result === 0;
+	return result === 0
 }
 
 // ============================================================================
@@ -236,7 +234,7 @@ export function verifyHmac(
  * ```
  */
 export function fastHash(content: string): bigint | number {
-	return Bun.hash(content);
+	return Bun.hash(content)
 }
 
 /**
@@ -251,7 +249,7 @@ export function fastHash(content: string): bigint | number {
  * ```
  */
 export function fastHashHex(content: string): string {
-	return Bun.hash(content).toString(16);
+	return Bun.hash(content).toString(16)
 }
 
 /**
@@ -266,7 +264,7 @@ export function fastHashHex(content: string): string {
  * ```
  */
 export function fastHashMulti(...values: unknown[]): string {
-	return fastHashHex(JSON.stringify(values));
+	return fastHashHex(JSON.stringify(values))
 }
 
 // ============================================================================
@@ -287,7 +285,7 @@ export function fastHashMulti(...values: unknown[]): string {
  * ```
  */
 export function contentId(content: string): string {
-	return sha256(content).slice(0, 12);
+	return sha256(content).slice(0, 12)
 }
 
 /**
@@ -298,7 +296,7 @@ export function contentId(content: string): string {
  * @returns Short hash string
  */
 export function shortHash(content: string, length = 8): string {
-	return sha256(content).slice(0, length);
+	return sha256(content).slice(0, length)
 }
 
 /**
@@ -313,7 +311,7 @@ export function shortHash(content: string, length = 8): string {
  * ```
  */
 export function hashObject(obj: unknown): string {
-	return sha256(JSON.stringify(obj));
+	return sha256(JSON.stringify(obj))
 }
 
 // ============================================================================
@@ -322,13 +320,13 @@ export function hashObject(obj: unknown): string {
 
 /** Supported hash algorithms */
 export type HashAlgorithm =
-	| "sha256"
-	| "sha512"
-	| "sha384"
-	| "sha1"
-	| "md5"
-	| "blake2b256"
-	| "blake2b512";
+	| 'sha256'
+	| 'sha512'
+	| 'sha384'
+	| 'sha1'
+	| 'md5'
+	| 'blake2b256'
+	| 'blake2b512'
 
 /**
  * Create a streaming hasher for large data
@@ -351,7 +349,7 @@ export function createHasher(
 ): Bun.CryptoHasher {
 	return hmacKey
 		? new Bun.CryptoHasher(algorithm, hmacKey)
-		: new Bun.CryptoHasher(algorithm);
+		: new Bun.CryptoHasher(algorithm)
 }
 
 /**
@@ -368,20 +366,20 @@ export function createHasher(
  */
 export async function hashStream(
 	stream: ReadableStream<Uint8Array>,
-	algorithm: HashAlgorithm = "sha256",
+	algorithm: HashAlgorithm = 'sha256',
 ): Promise<string> {
-	const hasher = createHasher(algorithm);
-	const reader = stream.getReader();
+	const hasher = createHasher(algorithm)
+	const reader = stream.getReader()
 
 	try {
 		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			hasher.update(value);
+			const { done, value } = await reader.read()
+			if (done) break
+			hasher.update(value)
 		}
 	} finally {
-		reader.releaseLock();
+		reader.releaseLock()
 	}
 
-	return hasher.digest("hex");
+	return hasher.digest('hex')
 }

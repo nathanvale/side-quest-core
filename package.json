@@ -1,5 +1,5 @@
 {
-	"name": "@sidequest/core",
+	"name": "@side-quest/core",
 	"version": "0.0.0",
 	"description": "Shared utilities for Bun/TypeScript projects",
 	"author": {

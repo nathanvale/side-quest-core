@@ -16,7 +16,7 @@
  *   getCurrentContext,
  *   createTraceContext,
  *   runWithContext,
- * } from "@sidequest/core/instrumentation";
+ * } from "@side-quest/core/instrumentation";
  *
  * // Create session context
  * const sessionCtx = createTraceContext({ sessionCid: "my-session" });
@@ -46,7 +46,7 @@ export {
 	type TraceContext,
 	withChildContext,
 	withChildContextAsync,
-} from "./context.js";
+} from './context.js'
 
 // Error categorization
 export {
@@ -54,14 +54,14 @@ export {
 	type ErrorCategory,
 	type ErrorCode,
 	getErrorCategory,
-} from "./error-category.js";
+} from './error-category.js'
 // Error pattern detection for subprocess output
 export {
 	detectErrorFromOutput,
 	type ErrorPattern,
 	isCommandNotFoundOutput,
 	isTimeoutOutput,
-} from "./error-patterns.js";
+} from './error-patterns.js'
 // Metrics
 export {
 	type CounterData,
@@ -75,7 +75,7 @@ export {
 	type MetricLabels,
 	observeHistogram,
 	resetMetrics,
-} from "./metrics.js";
+} from './metrics.js'
 // Simple observe API (callbacks)
 // Context-aware observe API (W3C Trace Context)
 export {
@@ -87,7 +87,7 @@ export {
 	observeSync,
 	observeSyncWithContext,
 	observeWithContext,
-} from "./observe.js";
+} from './observe.js'
 // Resource metrics (memory, heap, RSS)
 export {
 	type CaptureResourceMetricsOptions,
@@ -96,6 +96,6 @@ export {
 	formatResourceMetrics,
 	type ResourceMetrics,
 	type ResourceMetricsLogger,
-} from "./resource-metrics.js";
+} from './resource-metrics.js'
 // Typed error base class
-export { PluginError } from "./typed-error.js";
+export { PluginError } from './typed-error.js'

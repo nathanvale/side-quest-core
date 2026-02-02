@@ -18,7 +18,7 @@
  *   spawnSyncCollect,
  *   shellExec,
  *   commandExists,
- * } from "@sidequest/core/spawn";
+ * } from "@side-quest/core/spawn";
  *
  * // Async spawn
  * const { stdout } = await spawnAndCollect(["git", "status"]);
@@ -34,20 +34,20 @@
  * ```
  */
 
-import { homedir } from "node:os";
-import path from "node:path";
-import { $, spawn } from "bun";
+import { homedir } from 'node:os'
+import path from 'node:path'
+import { $, spawn } from 'bun'
 
 /**
  * Result of spawning a process and collecting its output.
  */
 export interface SpawnResult {
 	/** Standard output from the process */
-	stdout: string;
+	stdout: string
 	/** Standard error from the process */
-	stderr: string;
+	stderr: string
 	/** Exit code of the process */
-	exitCode: number;
+	exitCode: number
 }
 
 /**
@@ -58,11 +58,11 @@ export interface SpawnResult {
  * @throws Error if the command is not found
  */
 export function ensureCommandAvailable(cmd: string): string {
-	const resolved = Bun.which(cmd);
+	const resolved = Bun.which(cmd)
 	if (!resolved) {
-		throw new Error(`Command not found: ${cmd}`);
+		throw new Error(`Command not found: ${cmd}`)
 	}
-	return resolved;
+	return resolved
 }
 
 /**
@@ -89,28 +89,28 @@ export function ensureCommandAvailable(cmd: string): string {
 export function buildEnhancedPath(
 	extraPaths: ReadonlyArray<string> = [],
 ): string {
-	const current = process.env.PATH ?? "";
-	const currentPaths = new Set(current.split(":").filter(Boolean));
+	const current = process.env.PATH ?? ''
+	const currentPaths = new Set(current.split(':').filter(Boolean))
 	const defaults = [
-		path.join(homedir(), ".local", "bin"),
-		"/opt/homebrew/bin",
-		"/usr/local/bin",
-	];
+		path.join(homedir(), '.local', 'bin'),
+		'/opt/homebrew/bin',
+		'/usr/local/bin',
+	]
 
 	// Deduplicate: track all paths we've seen (current + what we're adding)
-	const seen = new Set(currentPaths);
-	const additions: string[] = [];
+	const seen = new Set(currentPaths)
+	const additions: string[] = []
 
 	for (const p of [...defaults, ...extraPaths]) {
 		if (p && !seen.has(p)) {
-			additions.push(p);
-			seen.add(p);
+			additions.push(p)
+			seen.add(p)
 		}
 	}
 
 	return additions.length > 0
-		? [...additions, current].filter(Boolean).join(":")
-		: current;
+		? [...additions, current].filter(Boolean).join(':')
+		: current
 }
 
 /**
@@ -136,19 +136,19 @@ export function buildEnhancedPath(
 export async function spawnAndCollect(
 	cmd: string[],
 	options?: {
-		env?: Record<string, string | undefined>;
-		signal?: AbortSignal;
-		cwd?: string;
+		env?: Record<string, string | undefined>
+		signal?: AbortSignal
+		cwd?: string
 	},
 ): Promise<SpawnResult> {
 	const proc = spawn({
 		cmd,
-		stdout: "pipe",
-		stderr: "pipe",
+		stdout: 'pipe',
+		stderr: 'pipe',
 		env: options?.env ? { ...process.env, ...options.env } : process.env,
 		signal: options?.signal,
 		cwd: options?.cwd,
-	});
+	})
 
 	// CRITICAL: Consume streams in parallel with waiting for exit.
 	// Reading after proc.exited resolves can miss output (race condition).
@@ -156,9 +156,9 @@ export async function spawnAndCollect(
 		new Response(proc.stdout).text(),
 		new Response(proc.stderr).text(),
 		proc.exited,
-	]);
+	])
 
-	return { stdout, stderr, exitCode };
+	return { stdout, stderr, exitCode }
 }
 
 /**
@@ -188,31 +188,31 @@ export async function spawnWithTimeout(
 	cmd: string[],
 	timeoutMs: number,
 	options?: {
-		env?: Record<string, string | undefined>;
-		cwd?: string;
+		env?: Record<string, string | undefined>
+		cwd?: string
 	},
 ): Promise<SpawnResult & { timedOut: boolean }> {
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+	const controller = new AbortController()
+	const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
 	try {
 		const result = await spawnAndCollect(cmd, {
 			...options,
 			signal: controller.signal,
-		});
-		clearTimeout(timeoutId);
-		return { ...result, timedOut: false };
+		})
+		clearTimeout(timeoutId)
+		return { ...result, timedOut: false }
 	} catch (error) {
-		clearTimeout(timeoutId);
+		clearTimeout(timeoutId)
 		if (controller.signal.aborted) {
 			return {
-				stdout: "",
-				stderr: "",
+				stdout: '',
+				stderr: '',
 				exitCode: -1,
 				timedOut: true,
-			};
+			}
 		}
-		throw error;
+		throw error
 	}
 }
 
@@ -226,32 +226,32 @@ export async function spawnWithTimeout(
 export function spawnSyncCollect(
 	cmd: string[],
 	options?: {
-		env?: Record<string, string | undefined>;
-		cwd?: string;
+		env?: Record<string, string | undefined>
+		cwd?: string
 	},
 ): SpawnResult {
 	const result = Bun.spawnSync({
 		cmd,
-		stdout: "pipe",
-		stderr: "pipe",
+		stdout: 'pipe',
+		stderr: 'pipe',
 		cwd: options?.cwd,
 		env: options?.env ? { ...process.env, ...options.env } : process.env,
-	});
+	})
 
 	const stdout =
-		typeof result.stdout === "string"
+		typeof result.stdout === 'string'
 			? result.stdout
-			: new TextDecoder().decode(result.stdout);
+			: new TextDecoder().decode(result.stdout)
 	const stderr =
-		typeof result.stderr === "string"
+		typeof result.stderr === 'string'
 			? result.stderr
-			: new TextDecoder().decode(result.stderr);
+			: new TextDecoder().decode(result.stderr)
 
 	return {
 		stdout,
 		stderr,
 		exitCode: result.exitCode ?? 1,
-	};
+	}
 }
 
 // ============================================================================
@@ -261,11 +261,11 @@ export function spawnSyncCollect(
 /** Options for shell execution */
 export interface ShellExecOptions {
 	/** Working directory for the command */
-	cwd?: string;
+	cwd?: string
 	/** Environment variables to set */
-	env?: Record<string, string | undefined>;
+	env?: Record<string, string | undefined>
 	/** Whether to throw on non-zero exit (default: true) */
-	throws?: boolean;
+	throws?: boolean
 }
 
 /**
@@ -309,33 +309,33 @@ export async function shellExec(
 	command: string,
 	options?: ShellExecOptions,
 ): Promise<SpawnResult> {
-	const { cwd, env, throws = true } = options ?? {};
+	const { cwd, env, throws = true } = options ?? {}
 
 	// Build shell with enhanced PATH for tool discovery
 	let shell = $`${command}`.env({
 		...process.env,
 		PATH: buildEnhancedPath(),
 		...env,
-	});
+	})
 
 	if (cwd) {
-		shell = shell.cwd(cwd);
+		shell = shell.cwd(cwd)
 	}
 
 	if (!throws) {
-		shell = shell.nothrow();
+		shell = shell.nothrow()
 	}
 
 	// Capture output as text
-	shell = shell.quiet();
+	shell = shell.quiet()
 
-	const result = await shell;
+	const result = await shell
 
 	return {
 		stdout: result.stdout.toString(),
 		stderr: result.stderr.toString(),
 		exitCode: result.exitCode,
-	};
+	}
 }
 
 // ============================================================================
@@ -356,7 +356,7 @@ export async function shellExec(
  * ```
  */
 export function commandExists(cmd: string): boolean {
-	return Bun.which(cmd) !== null;
+	return Bun.which(cmd) !== null
 }
 
 /**
@@ -374,7 +374,7 @@ export function commandExists(cmd: string): boolean {
  * ```
  */
 export function whichCommand(cmd: string): string | null {
-	return Bun.which(cmd);
+	return Bun.which(cmd)
 }
 
 /**
@@ -396,7 +396,7 @@ export function whichCommand(cmd: string): string | null {
  */
 export function escapeShellArg(arg: string): string {
 	// Replace single quotes with escaped version and wrap in single quotes
-	return `'${arg.replace(/'/g, "'\\''")}'`;
+	return `'${arg.replace(/'/g, "'\\''")}'`
 }
 
 /**
@@ -413,5 +413,5 @@ export function escapeShellArg(arg: string): string {
  * ```
  */
 export function escapeShellArgs(args: string[]): string {
-	return args.map(escapeShellArg).join(" ");
+	return args.map(escapeShellArg).join(' ')
 }

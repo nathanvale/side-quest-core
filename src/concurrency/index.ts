@@ -10,7 +10,7 @@
  * the same resource (e.g., registries, config files).
  *
  * ```typescript
- * import { withFileLock } from "@sidequest/core/concurrency";
+ * import { withFileLock } from "@side-quest/core/concurrency";
  *
  * await withFileLock("classifier-registry", async () => {
  *   const registry = await readRegistry();
@@ -25,7 +25,7 @@
  * on failure. Ensures all-or-nothing semantics for multi-step operations.
  *
  * ```typescript
- * import { executeTransaction } from "@sidequest/core/concurrency";
+ * import { executeTransaction } from "@side-quest/core/concurrency";
  *
  * const result = await executeTransaction([
  *   {
@@ -51,7 +51,7 @@
  * Prevents duplicate creation even when called concurrently.
  *
  * ```typescript
- * import { ResourcePool } from "@sidequest/core/concurrency";
+ * import { ResourcePool } from "@side-quest/core/concurrency";
  *
  * const parserPool = new ResourcePool<string, Parser>();
  *
@@ -70,7 +70,7 @@
  * Enforce minimum delay between operations to respect API rate limits.
  *
  * ```typescript
- * import { RateLimiter } from "@sidequest/core/concurrency";
+ * import { RateLimiter } from "@side-quest/core/concurrency";
  *
  * const limiter = new RateLimiter(2000); // 2s between requests
  *
@@ -85,7 +85,7 @@
  * Wrap async operations with timeouts to prevent hanging indefinitely.
  *
  * ```typescript
- * import { withTimeout } from "@sidequest/core/concurrency";
+ * import { withTimeout } from "@side-quest/core/concurrency";
  *
  * try {
  *   const result = await withTimeout(fetchData(), 5000);
@@ -106,22 +106,22 @@ export {
 	type FileLockOptions,
 	getDefaultLockDir,
 	withFileLock,
-} from "./file-lock.js";
+} from './file-lock.js'
 export {
 	type ParallelChunkOptions,
 	processInParallelChunks,
-} from "./parallel.js";
-export { RateLimiter } from "./rate-limiter.js";
-export { ResourcePool } from "./resource-pool.js";
+} from './parallel.js'
+export { RateLimiter } from './rate-limiter.js'
+export { ResourcePool } from './resource-pool.js'
 export {
 	createTimeoutPromise,
 	TimeoutError,
 	withTimeout,
-} from "./timeout.js";
+} from './timeout.js'
 export {
 	executeTransaction,
 	type RollbackOperation,
 	Transaction,
 	type TransactionLogger,
 	type TransactionResult,
-} from "./transaction.js";
+} from './transaction.js'

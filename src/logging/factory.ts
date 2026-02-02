@@ -7,34 +7,34 @@
  * - Centralized log location (~/.claude/logs/<plugin>.jsonl)
  */
 
-import { existsSync, mkdirSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { getRotatingFileSink } from "@logtape/file";
+import { existsSync, mkdirSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { getRotatingFileSink } from '@logtape/file'
 import {
 	configure,
 	getLogger,
 	jsonLinesFormatter,
 	type Logger,
-} from "@logtape/logtape";
+} from '@logtape/logtape'
 import {
 	DEFAULT_LOG_EXTENSION,
 	DEFAULT_LOG_LEVEL,
 	DEFAULT_MAX_FILES,
 	DEFAULT_MAX_SIZE,
 	type LogLevel,
-} from "./config.ts";
-import { createCorrelationId } from "./correlation.ts";
+} from './config.ts'
+import { createCorrelationId } from './correlation.ts'
 
 /** Default centralized log directory for all plugins */
-const DEFAULT_LOG_DIR = join(homedir(), ".claude", "logs");
+const DEFAULT_LOG_DIR = join(homedir(), '.claude', 'logs')
 
 /**
  * Options for creating a plugin logger.
  */
 export interface PluginLoggerOptions {
 	/** Plugin name (used for log file name and category). Should be kebab-case. */
-	name: string;
+	name: string
 
 	/**
 	 * Subsystem names for hierarchical loggers.
@@ -42,34 +42,34 @@ export interface PluginLoggerOptions {
 	 *
 	 * @example ["scraper", "auth", "gmail"] → loggers for ["my-plugin", "scraper"], etc.
 	 */
-	subsystems?: string[];
+	subsystems?: string[]
 
 	/**
 	 * Log directory. Defaults to ~/.claude/logs/
 	 * All plugin logs are stored flat in this directory.
 	 */
-	logDir?: string;
+	logDir?: string
 
 	/**
 	 * Log file name (without extension). Defaults to plugin name.
 	 * Results in: <logDir>/<logFileName>.jsonl
 	 */
-	logFileName?: string;
+	logFileName?: string
 
 	/**
 	 * Maximum log file size before rotation. Defaults to 1 MiB.
 	 */
-	maxSize?: number;
+	maxSize?: number
 
 	/**
 	 * Number of rotated files to keep. Defaults to 5.
 	 */
-	maxFiles?: number;
+	maxFiles?: number
 
 	/**
 	 * Lowest log level to capture. Defaults to "debug".
 	 */
-	lowestLevel?: LogLevel;
+	lowestLevel?: LogLevel
 }
 
 /**
@@ -80,17 +80,17 @@ export interface PluginLogger {
 	 * Initialize the logging system. Must be called before logging.
 	 * Safe to call multiple times - only initializes once.
 	 */
-	initLogger: () => Promise<void>;
+	initLogger: () => Promise<void>
 
 	/**
 	 * Generate a correlation ID for request tracing.
 	 */
-	createCorrelationId: typeof createCorrelationId;
+	createCorrelationId: typeof createCorrelationId
 
 	/**
 	 * Root logger for the plugin category.
 	 */
-	rootLogger: Logger;
+	rootLogger: Logger
 
 	/**
 	 * Get a subsystem logger by name.
@@ -98,19 +98,19 @@ export interface PluginLogger {
 	 * @param subsystem - Subsystem name (e.g., "scraper", "auth")
 	 * @returns Logger for [pluginName, subsystem] category
 	 */
-	getSubsystemLogger: (subsystem: string) => Logger;
+	getSubsystemLogger: (subsystem: string) => Logger
 
 	/** Log directory path */
-	logDir: string;
+	logDir: string
 
 	/** Log file path */
-	logFile: string;
+	logFile: string
 
 	/**
 	 * Pre-created subsystem loggers (if subsystems were specified in options).
 	 * Keys are subsystem names, values are Logger instances.
 	 */
-	subsystemLoggers: Record<string, Logger>;
+	subsystemLoggers: Record<string, Logger>
 }
 
 /**
@@ -122,7 +122,7 @@ export interface PluginLogger {
  * @example
  * ```typescript
  * // In your plugin's logger.ts
- * import { createPluginLogger } from "@sidequest/core/logging";
+ * import { createPluginLogger } from "@side-quest/core/logging";
  *
  * const {
  *   initLogger,
@@ -152,11 +152,11 @@ export function createPluginLogger(options: PluginLoggerOptions): PluginLogger {
 		maxSize = DEFAULT_MAX_SIZE,
 		maxFiles = DEFAULT_MAX_FILES,
 		lowestLevel = DEFAULT_LOG_LEVEL,
-	} = options;
+	} = options
 
-	const logFile = join(logDir, `${logFileName}${DEFAULT_LOG_EXTENSION}`);
+	const logFile = join(logDir, `${logFileName}${DEFAULT_LOG_EXTENSION}`)
 
-	let isInitialized = false;
+	let isInitialized = false
 
 	/**
 	 * Initialize the logging system.
@@ -164,16 +164,16 @@ export function createPluginLogger(options: PluginLoggerOptions): PluginLogger {
 	 * Also safe to call when logtape is already configured (e.g., by test setup).
 	 */
 	async function initLogger(): Promise<void> {
-		if (isInitialized) return;
+		if (isInitialized) return
 
 		// Ensure log directory exists
 		if (!existsSync(logDir)) {
-			mkdirSync(logDir, { recursive: true });
+			mkdirSync(logDir, { recursive: true })
 		}
 
 		// Use unique sink name per plugin to avoid LogTape configuration conflicts
 		// Multiple plugins calling configure() will merge their configs
-		const sinkName = `file_${name}`;
+		const sinkName = `file_${name}`
 
 		try {
 			await configure({
@@ -194,12 +194,12 @@ export function createPluginLogger(options: PluginLoggerOptions): PluginLogger {
 					},
 					// Configure LogTape meta logger to reduce MCP server noise
 					{
-						category: ["logtape", "meta"],
+						category: ['logtape', 'meta'],
 						sinks: [sinkName],
-						lowestLevel: "error",
+						lowestLevel: 'error',
 					},
 				],
-			});
+			})
 		} catch (error: unknown) {
 			// Handle "Already configured" error gracefully - this happens when:
 			// 1. Tests use setupTestLogging() before importing production code
@@ -207,39 +207,39 @@ export function createPluginLogger(options: PluginLoggerOptions): PluginLogger {
 			// In both cases, we can safely ignore and continue with existing config
 			if (
 				error instanceof Error &&
-				error.message.includes("Already configured")
+				error.message.includes('Already configured')
 			) {
-				isInitialized = true;
-				return;
+				isInitialized = true
+				return
 			}
-			throw error;
+			throw error
 		}
 
 		// Log initialization
-		const startupLogger = getLogger([name]);
-		startupLogger.info("Logging initialized", {
+		const startupLogger = getLogger([name])
+		startupLogger.info('Logging initialized', {
 			plugin: name,
 			logDir,
 			logFile,
 			maxSize,
 			maxFiles,
-		});
+		})
 
-		isInitialized = true;
+		isInitialized = true
 	}
 
 	// Create root logger
-	const rootLogger = getLogger([name]);
+	const rootLogger = getLogger([name])
 
 	// Create subsystem logger getter
 	function getSubsystemLogger(subsystem: string): Logger {
-		return getLogger([name, subsystem]);
+		return getLogger([name, subsystem])
 	}
 
 	// Pre-create subsystem loggers
-	const subsystemLoggers: Record<string, Logger> = {};
+	const subsystemLoggers: Record<string, Logger> = {}
 	for (const subsystem of subsystems) {
-		subsystemLoggers[subsystem] = getSubsystemLogger(subsystem);
+		subsystemLoggers[subsystem] = getSubsystemLogger(subsystem)
 	}
 
 	return {
@@ -250,5 +250,5 @@ export function createPluginLogger(options: PluginLoggerOptions): PluginLogger {
 		logDir,
 		logFile,
 		subsystemLoggers,
-	};
+	}
 }

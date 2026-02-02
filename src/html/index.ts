@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { escapeHtml, htmlTag } from "@sidequest/core/html";
+ * import { escapeHtml, htmlTag } from "@side-quest/core/html";
  *
  * const safe = escapeHtml("<script>alert('xss')</script>");
  * // "&lt;script&gt;alert('xss')&lt;/script&gt;"
@@ -35,7 +35,7 @@
  * ```
  */
 export function escapeHtml(input: string): string {
-	return Bun.escapeHTML(input);
+	return Bun.escapeHTML(input)
 }
 
 /**
@@ -53,7 +53,7 @@ export function escapeHtml(input: string): string {
  * ```
  */
 export function escapeHtmlWithBreaks(input: string): string {
-	return Bun.escapeHTML(input).replace(/\n/g, "<br>");
+	return Bun.escapeHTML(input).replace(/\n/g, '<br>')
 }
 
 /**
@@ -71,11 +71,11 @@ export function escapeHtmlWithBreaks(input: string): string {
  * ```
  */
 export function htmlAttr(input: string): string {
-	return Bun.escapeHTML(input);
+	return Bun.escapeHTML(input)
 }
 
 /** Attribute value types for htmlTag */
-type AttrValue = string | number | boolean | null | undefined;
+type AttrValue = string | number | boolean | null | undefined
 
 /**
  * Generate an HTML tag with safe attribute escaping
@@ -108,46 +108,46 @@ export function htmlTag(
 		? Object.entries(attrs)
 				.filter(([, v]) => v != null)
 				.map(([k, v]) => {
-					if (v === true) return k;
-					if (v === false) return "";
-					return `${k}="${Bun.escapeHTML(String(v))}"`;
+					if (v === true) return k
+					if (v === false) return ''
+					return `${k}="${Bun.escapeHTML(String(v))}"`
 				})
 				.filter(Boolean)
-				.join(" ")
-		: "";
+				.join(' ')
+		: ''
 
-	const attrPart = attrStr ? ` ${attrStr}` : "";
+	const attrPart = attrStr ? ` ${attrStr}` : ''
 
 	// Self-closing tags
 	const selfClosing = [
-		"area",
-		"base",
-		"br",
-		"col",
-		"embed",
-		"hr",
-		"img",
-		"input",
-		"link",
-		"meta",
-		"param",
-		"source",
-		"track",
-		"wbr",
-	];
+		'area',
+		'base',
+		'br',
+		'col',
+		'embed',
+		'hr',
+		'img',
+		'input',
+		'link',
+		'meta',
+		'param',
+		'source',
+		'track',
+		'wbr',
+	]
 
 	if (selfClosing.includes(tag.toLowerCase())) {
-		return `<${tag}${attrPart}>`;
+		return `<${tag}${attrPart}>`
 	}
 
 	const innerContent =
 		content === undefined
-			? ""
+			? ''
 			: content instanceof SafeHtml
 				? content.toString()
-				: Bun.escapeHTML(content);
+				: Bun.escapeHTML(content)
 
-	return `<${tag}${attrPart}>${innerContent}</${tag}>`;
+	return `<${tag}${attrPart}>${innerContent}</${tag}>`
 }
 
 /**
@@ -166,7 +166,7 @@ export class SafeHtml {
 	constructor(private readonly html: string) {}
 
 	toString(): string {
-		return this.html;
+		return this.html
 	}
 }
 
@@ -177,7 +177,7 @@ export class SafeHtml {
  * @returns SafeHtml wrapper
  */
 export function safeHtml(html: string): SafeHtml {
-	return new SafeHtml(html);
+	return new SafeHtml(html)
 }
 
 /**
@@ -195,7 +195,7 @@ export function safeHtml(html: string): SafeHtml {
  * ```
  */
 export function stripHtmlTags(input: string): string {
-	return input.replace(/<[^>]*>/g, "");
+	return input.replace(/<[^>]*>/g, '')
 }
 
 /**
@@ -215,22 +215,22 @@ export function stripHtmlTags(input: string): string {
  */
 export function unescapeHtml(input: string): string {
 	const entities: Record<string, string> = {
-		"&amp;": "&",
-		"&lt;": "<",
-		"&gt;": ">",
-		"&quot;": '"',
-		"&#39;": "'",
-		"&apos;": "'",
-		"&#x27;": "'",
-		"&#x2F;": "/",
-		"&#47;": "/",
-		"&nbsp;": " ",
-	};
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&quot;': '"',
+		'&#39;': "'",
+		'&apos;': "'",
+		'&#x27;': "'",
+		'&#x2F;': '/',
+		'&#47;': '/',
+		'&nbsp;': ' ',
+	}
 
 	return input.replace(
 		/&(?:amp|lt|gt|quot|apos|#39|#x27|#x2F|#47|nbsp);/g,
 		(match) => entities[match] ?? match,
-	);
+	)
 }
 
 /**
@@ -252,18 +252,18 @@ export function unescapeHtml(input: string): string {
 export function truncateHtml(
 	html: string,
 	maxLength: number,
-	suffix = "...",
+	suffix = '...',
 ): string {
 	// Simple implementation - extract text, truncate, re-escape
-	const text = stripHtmlTags(html);
+	const text = stripHtmlTags(html)
 	if (text.length <= maxLength) {
-		return html;
+		return html
 	}
 
 	// For complex HTML, this is a simplified version
 	// A full implementation would track open tags
-	const truncated = text.slice(0, maxLength);
-	return Bun.escapeHTML(truncated) + suffix;
+	const truncated = text.slice(0, maxLength)
+	return Bun.escapeHTML(truncated) + suffix
 }
 
 /**
@@ -279,11 +279,11 @@ export function truncateHtml(
  * ```
  */
 export function linkifyUrls(text: string): string {
-	const urlPattern = /(https?:\/\/[^\s<>]+)/g;
+	const urlPattern = /(https?:\/\/[^\s<>]+)/g
 
 	return Bun.escapeHTML(text).replace(urlPattern, (url) => {
-		return `<a href="${Bun.escapeHTML(url)}">${Bun.escapeHTML(url)}</a>`;
-	});
+		return `<a href="${Bun.escapeHTML(url)}">${Bun.escapeHTML(url)}</a>`
+	})
 }
 
 /**
@@ -300,9 +300,9 @@ export function linkifyUrls(text: string): string {
  * ```
  */
 export function htmlList(items: string[], ordered = false): string {
-	const tag = ordered ? "ol" : "ul";
+	const tag = ordered ? 'ol' : 'ul'
 	const listItems = items
 		.map((item) => `<li>${Bun.escapeHTML(item)}</li>`)
-		.join("");
-	return `<${tag}>${listItems}</${tag}>`;
+		.join('')
+	return `<${tag}>${listItems}</${tag}>`
 }

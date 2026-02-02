@@ -20,7 +20,7 @@
  *   saveTokenFile,
  *   isTokenExpired,
  *   validateOAuthCredentials
- * } from "@sidequest/core/oauth";
+ * } from "@side-quest/core/oauth";
  *
  * // Load existing token
  * const token = loadTokenFile("~/.config/myapp/token.json");
@@ -45,5 +45,5 @@ export {
 	loadTokenFile,
 	saveTokenFile,
 	validateOAuthCredentials,
-} from "./token-file.ts";
-export type { OAuthCredentials, OAuthToken } from "./types.ts";
+} from './token-file.ts'
+export type { OAuthCredentials, OAuthToken } from './types.ts'

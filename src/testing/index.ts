@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import { createTempDir, writeTestFile, setupTestDir } from "@sidequest/core/testing";
+ * import { createTempDir, writeTestFile, setupTestDir } from "@side-quest/core/testing";
  *
  * // Create isolated temp directory
  * const tempDir = createTempDir("my-test-");
@@ -24,9 +24,9 @@
  * ```
  */
 
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 /**
  * Create a temporary directory with a given prefix
@@ -43,8 +43,8 @@ import path from "node:path";
  * // "/tmp/my-plugin-abc123"
  * ```
  */
-export function createTempDir(prefix = "test-"): string {
-	return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+export function createTempDir(prefix = 'test-'): string {
+	return fs.mkdtempSync(path.join(os.tmpdir(), prefix))
 }
 
 /**
@@ -65,9 +65,9 @@ export function writeTestFile(
 	relativePath: string,
 	content: string,
 ): void {
-	const fullPath = path.join(dir, relativePath);
-	fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-	fs.writeFileSync(fullPath, content, "utf8");
+	const fullPath = path.join(dir, relativePath)
+	fs.mkdirSync(path.dirname(fullPath), { recursive: true })
+	fs.writeFileSync(fullPath, content, 'utf8')
 }
 
 /**
@@ -83,7 +83,7 @@ export function writeTestFile(
  * ```
  */
 export function readTestFile(dir: string, relativePath: string): string {
-	return fs.readFileSync(path.join(dir, relativePath), "utf8");
+	return fs.readFileSync(path.join(dir, relativePath), 'utf8')
 }
 
 /**
@@ -94,7 +94,7 @@ export function readTestFile(dir: string, relativePath: string): string {
  * @returns True if file exists
  */
 export function testFileExists(dir: string, relativePath: string): boolean {
-	return fs.existsSync(path.join(dir, relativePath));
+	return fs.existsSync(path.join(dir, relativePath))
 }
 
 /**
@@ -120,11 +120,11 @@ export function setupTestDir(
 	prefix: string,
 	files: Record<string, string>,
 ): string {
-	const dir = createTempDir(prefix);
+	const dir = createTempDir(prefix)
 	for (const [relativePath, content] of Object.entries(files)) {
-		writeTestFile(dir, relativePath, content);
+		writeTestFile(dir, relativePath, content)
 	}
-	return dir;
+	return dir
 }
 
 /**
@@ -133,5 +133,5 @@ export function setupTestDir(
  * @param dir - Directory to remove (absolute path)
  */
 export function cleanupTestDir(dir: string): void {
-	fs.rmSync(dir, { recursive: true, force: true });
+	fs.rmSync(dir, { recursive: true, force: true })
 }

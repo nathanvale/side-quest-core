@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { globFiles, matchGlob } from "@sidequest/core/glob";
+ * import { globFiles, matchGlob } from "@side-quest/core/glob";
  *
  * // Get all TypeScript files
  * const files = globFilesSync("**\/*.ts", "./src");
@@ -16,22 +16,22 @@
  * ```
  */
 
-import * as path from "node:path";
+import * as path from 'node:path'
 
 /** Options for glob operations */
 export interface GlobOptions {
 	/** Working directory for relative paths (defaults to cwd) */
-	cwd?: string;
+	cwd?: string
 	/** Include dot files in results */
-	dot?: boolean;
+	dot?: boolean
 	/** Return absolute paths (default: true) */
-	absolute?: boolean;
+	absolute?: boolean
 	/** Follow symlinks */
-	followSymlinks?: boolean;
+	followSymlinks?: boolean
 	/** Only return directories */
-	onlyDirectories?: boolean;
+	onlyDirectories?: boolean
 	/** Only return files */
-	onlyFiles?: boolean;
+	onlyFiles?: boolean
 }
 
 /**
@@ -52,11 +52,11 @@ export async function* scanGlob(
 	pattern: string,
 	options?: GlobOptions | string,
 ): AsyncGenerator<string> {
-	const opts = typeof options === "string" ? { cwd: options } : (options ?? {});
-	const cwd = opts.cwd ?? process.cwd();
-	const absolute = opts.absolute ?? true;
+	const opts = typeof options === 'string' ? { cwd: options } : (options ?? {})
+	const cwd = opts.cwd ?? process.cwd()
+	const absolute = opts.absolute ?? true
 
-	const glob = new Bun.Glob(pattern);
+	const glob = new Bun.Glob(pattern)
 
 	for await (const entry of glob.scan({
 		cwd,
@@ -64,7 +64,7 @@ export async function* scanGlob(
 		followSymlinks: opts.followSymlinks,
 		onlyFiles: opts.onlyFiles ?? !opts.onlyDirectories,
 	})) {
-		yield absolute ? path.resolve(cwd, entry) : entry;
+		yield absolute ? path.resolve(cwd, entry) : entry
 	}
 }
 
@@ -86,11 +86,11 @@ export function* scanGlobSync(
 	pattern: string,
 	options?: GlobOptions | string,
 ): Generator<string> {
-	const opts = typeof options === "string" ? { cwd: options } : (options ?? {});
-	const cwd = opts.cwd ?? process.cwd();
-	const absolute = opts.absolute ?? true;
+	const opts = typeof options === 'string' ? { cwd: options } : (options ?? {})
+	const cwd = opts.cwd ?? process.cwd()
+	const absolute = opts.absolute ?? true
 
-	const glob = new Bun.Glob(pattern);
+	const glob = new Bun.Glob(pattern)
 
 	for (const entry of glob.scanSync({
 		cwd,
@@ -98,7 +98,7 @@ export function* scanGlobSync(
 		followSymlinks: opts.followSymlinks,
 		onlyFiles: opts.onlyFiles ?? !opts.onlyDirectories,
 	})) {
-		yield absolute ? path.resolve(cwd, entry) : entry;
+		yield absolute ? path.resolve(cwd, entry) : entry
 	}
 }
 
@@ -119,11 +119,11 @@ export async function globFiles(
 	pattern: string,
 	options?: GlobOptions | string,
 ): Promise<string[]> {
-	const files: string[] = [];
+	const files: string[] = []
 	for await (const file of scanGlob(pattern, options)) {
-		files.push(file);
+		files.push(file)
 	}
-	return files;
+	return files
 }
 
 /**
@@ -143,7 +143,7 @@ export function globFilesSync(
 	pattern: string,
 	options?: GlobOptions | string,
 ): string[] {
-	return [...scanGlobSync(pattern, options)];
+	return [...scanGlobSync(pattern, options)]
 }
 
 /**
@@ -161,8 +161,8 @@ export function globFilesSync(
  * ```
  */
 export function matchGlob(pattern: string, input: string): boolean {
-	const glob = new Bun.Glob(pattern);
-	return glob.match(input);
+	const glob = new Bun.Glob(pattern)
+	return glob.match(input)
 }
 
 /**
@@ -179,8 +179,8 @@ export function matchGlob(pattern: string, input: string): boolean {
  * ```
  */
 export function createGlobMatcher(pattern: string): (input: string) => boolean {
-	const glob = new Bun.Glob(pattern);
-	return (input: string) => glob.match(input);
+	const glob = new Bun.Glob(pattern)
+	return (input: string) => glob.match(input)
 }
 
 /**
@@ -197,7 +197,7 @@ export function createGlobMatcher(pattern: string): (input: string) => boolean {
  * ```
  */
 export function matchAnyGlob(patterns: string[], input: string): boolean {
-	return patterns.some((pattern) => matchGlob(pattern, input));
+	return patterns.some((pattern) => matchGlob(pattern, input))
 }
 
 /**
@@ -214,8 +214,8 @@ export function matchAnyGlob(patterns: string[], input: string): boolean {
  * ```
  */
 export function filterGlob(pattern: string, inputs: string[]): string[] {
-	const glob = new Bun.Glob(pattern);
-	return inputs.filter((input) => glob.match(input));
+	const glob = new Bun.Glob(pattern)
+	return inputs.filter((input) => glob.match(input))
 }
 
 /**
@@ -234,19 +234,19 @@ export function globFilesMultiSync(
 	patterns: string[],
 	options?: GlobOptions | string,
 ): string[] {
-	const seen = new Set<string>();
-	const result: string[] = [];
+	const seen = new Set<string>()
+	const result: string[] = []
 
 	for (const pattern of patterns) {
 		for (const file of scanGlobSync(pattern, options)) {
 			if (!seen.has(file)) {
-				seen.add(file);
-				result.push(file);
+				seen.add(file)
+				result.push(file)
 			}
 		}
 	}
 
-	return result;
+	return result
 }
 
 /**
@@ -265,17 +265,17 @@ export async function globFilesMulti(
 	patterns: string[],
 	options?: GlobOptions | string,
 ): Promise<string[]> {
-	const seen = new Set<string>();
-	const result: string[] = [];
+	const seen = new Set<string>()
+	const result: string[] = []
 
 	for (const pattern of patterns) {
 		for await (const file of scanGlob(pattern, options)) {
 			if (!seen.has(file)) {
-				seen.add(file);
-				result.push(file);
+				seen.add(file)
+				result.push(file)
 			}
 		}
 	}
 
-	return result;
+	return result
 }

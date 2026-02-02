@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { hashPassword, verifyPassword } from "@sidequest/core/password";
+ * import { hashPassword, verifyPassword } from "@side-quest/core/password";
  *
  * const hash = await hashPassword("mySecretPassword");
  * const isValid = await verifyPassword("mySecretPassword", hash);
@@ -14,18 +14,18 @@
  */
 
 /** Supported hashing algorithms */
-export type PasswordAlgorithm = "bcrypt" | "argon2id" | "argon2d" | "argon2i";
+export type PasswordAlgorithm = 'bcrypt' | 'argon2id' | 'argon2d' | 'argon2i'
 
 /** Options for password hashing */
 export interface HashOptions {
 	/** Hashing algorithm (default: argon2id) */
-	algorithm?: PasswordAlgorithm;
+	algorithm?: PasswordAlgorithm
 	/** Cost factor for bcrypt (4-31, default: 10) */
-	cost?: number;
+	cost?: number
 	/** Memory cost for argon2 in KB (default: 65536 = 64MB) */
-	memoryCost?: number;
+	memoryCost?: number
 	/** Time cost for argon2 (iterations, default: 2) */
-	timeCost?: number;
+	timeCost?: number
 }
 
 /**
@@ -54,20 +54,20 @@ export async function hashPassword(
 	password: string,
 	options?: HashOptions,
 ): Promise<string> {
-	const algorithm = options?.algorithm ?? "argon2id";
+	const algorithm = options?.algorithm ?? 'argon2id'
 
-	if (algorithm === "bcrypt") {
+	if (algorithm === 'bcrypt') {
 		return Bun.password.hash(password, {
-			algorithm: "bcrypt",
+			algorithm: 'bcrypt',
 			cost: options?.cost ?? 10,
-		});
+		})
 	}
 
 	return Bun.password.hash(password, {
 		algorithm,
 		memoryCost: options?.memoryCost ?? 65536,
 		timeCost: options?.timeCost ?? 2,
-	});
+	})
 }
 
 /**
@@ -83,20 +83,20 @@ export function hashPasswordSync(
 	password: string,
 	options?: HashOptions,
 ): string {
-	const algorithm = options?.algorithm ?? "argon2id";
+	const algorithm = options?.algorithm ?? 'argon2id'
 
-	if (algorithm === "bcrypt") {
+	if (algorithm === 'bcrypt') {
 		return Bun.password.hashSync(password, {
-			algorithm: "bcrypt",
+			algorithm: 'bcrypt',
 			cost: options?.cost ?? 10,
-		});
+		})
 	}
 
 	return Bun.password.hashSync(password, {
 		algorithm,
 		memoryCost: options?.memoryCost ?? 65536,
 		timeCost: options?.timeCost ?? 2,
-	});
+	})
 }
 
 /**
@@ -120,7 +120,7 @@ export async function verifyPassword(
 	password: string,
 	hash: string,
 ): Promise<boolean> {
-	return Bun.password.verify(password, hash);
+	return Bun.password.verify(password, hash)
 }
 
 /**
@@ -133,7 +133,7 @@ export async function verifyPassword(
  * @returns True if password matches
  */
 export function verifyPasswordSync(password: string, hash: string): boolean {
-	return Bun.password.verifySync(password, hash);
+	return Bun.password.verifySync(password, hash)
 }
 
 /**
@@ -155,39 +155,39 @@ export function verifyPasswordSync(password: string, hash: string): boolean {
  * ```
  */
 export function needsRehash(hash: string, options?: HashOptions): boolean {
-	const algorithm = options?.algorithm ?? "argon2id";
+	const algorithm = options?.algorithm ?? 'argon2id'
 
 	// Check if algorithm matches
-	if (algorithm === "bcrypt" && !hash.startsWith("$2")) {
-		return true;
+	if (algorithm === 'bcrypt' && !hash.startsWith('$2')) {
+		return true
 	}
-	if (algorithm.startsWith("argon2") && !hash.startsWith("$argon2")) {
-		return true;
+	if (algorithm.startsWith('argon2') && !hash.startsWith('$argon2')) {
+		return true
 	}
 
 	// For bcrypt, check cost parameter
-	if (algorithm === "bcrypt" && options?.cost) {
-		const costMatch = hash.match(/^\$2[aby]?\$(\d+)\$/);
+	if (algorithm === 'bcrypt' && options?.cost) {
+		const costMatch = hash.match(/^\$2[aby]?\$(\d+)\$/)
 		if (costMatch) {
-			const currentCost = Number.parseInt(costMatch[1] ?? "0", 10);
+			const currentCost = Number.parseInt(costMatch[1] ?? '0', 10)
 			if (currentCost < options.cost) {
-				return true;
+				return true
 			}
 		}
 	}
 
 	// For argon2, check memory cost in hash
-	if (algorithm.startsWith("argon2") && options?.memoryCost) {
-		const memMatch = hash.match(/m=(\d+)/);
+	if (algorithm.startsWith('argon2') && options?.memoryCost) {
+		const memMatch = hash.match(/m=(\d+)/)
 		if (memMatch) {
-			const currentMem = Number.parseInt(memMatch[1] ?? "0", 10);
+			const currentMem = Number.parseInt(memMatch[1] ?? '0', 10)
 			if (currentMem < options.memoryCost) {
-				return true;
+				return true
 			}
 		}
 	}
 
-	return false;
+	return false
 }
 
 /**
@@ -207,20 +207,20 @@ export function needsRehash(hash: string, options?: HashOptions): boolean {
  */
 export function generateSecureToken(
 	length = 32,
-	encoding: "hex" | "base64" | "base64url" = "hex",
+	encoding: 'hex' | 'base64' | 'base64url' = 'hex',
 ): string {
-	const bytes = crypto.getRandomValues(new Uint8Array(length));
+	const bytes = crypto.getRandomValues(new Uint8Array(length))
 
-	if (encoding === "hex") {
+	if (encoding === 'hex') {
 		return Array.from(bytes)
-			.map((b) => b.toString(16).padStart(2, "0"))
-			.join("");
+			.map((b) => b.toString(16).padStart(2, '0'))
+			.join('')
 	}
 
-	const buffer = Buffer.from(bytes);
-	return encoding === "base64url"
-		? buffer.toString("base64url")
-		: buffer.toString("base64");
+	const buffer = Buffer.from(bytes)
+	return encoding === 'base64url'
+		? buffer.toString('base64url')
+		: buffer.toString('base64')
 }
 
 /**
@@ -241,10 +241,10 @@ export function generateSecureToken(
 export function generateRandomPassword(
 	length = 16,
 	options?: {
-		uppercase?: boolean;
-		lowercase?: boolean;
-		numbers?: boolean;
-		symbols?: boolean;
+		uppercase?: boolean
+		lowercase?: boolean
+		numbers?: boolean
+		symbols?: boolean
 	},
 ): string {
 	const {
@@ -252,22 +252,22 @@ export function generateRandomPassword(
 		lowercase = true,
 		numbers = true,
 		symbols = true,
-	} = options ?? {};
+	} = options ?? {}
 
-	let chars = "";
-	if (uppercase) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	if (lowercase) chars += "abcdefghijklmnopqrstuvwxyz";
-	if (numbers) chars += "0123456789";
-	if (symbols) chars += "!@#$%^&*()_+-=[]{}|;:,.<>?";
+	let chars = ''
+	if (uppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	if (lowercase) chars += 'abcdefghijklmnopqrstuvwxyz'
+	if (numbers) chars += '0123456789'
+	if (symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?'
 
 	if (chars.length === 0) {
-		chars = "abcdefghijklmnopqrstuvwxyz";
+		chars = 'abcdefghijklmnopqrstuvwxyz'
 	}
 
-	const bytes = crypto.getRandomValues(new Uint8Array(length));
+	const bytes = crypto.getRandomValues(new Uint8Array(length))
 	return Array.from(bytes)
 		.map((b) => chars[b % chars.length])
-		.join("");
+		.join('')
 }
 
 /**
@@ -287,24 +287,24 @@ export function generateRandomPassword(
  * ```
  */
 export function secureCompare(a: string, b: string): boolean {
-	const encoder = new TextEncoder();
-	const aBytes = encoder.encode(a);
-	const bBytes = encoder.encode(b);
+	const encoder = new TextEncoder()
+	const aBytes = encoder.encode(a)
+	const bBytes = encoder.encode(b)
 
 	if (aBytes.length !== bBytes.length) {
 		// Still compare to prevent timing attack on length
 		// We need to do constant-time work even on length mismatch
-		const maxLen = Math.max(aBytes.length, bBytes.length);
+		const maxLen = Math.max(aBytes.length, bBytes.length)
 		for (let i = 0; i < maxLen; i++) {
 			const _ =
-				(aBytes[i % aBytes.length] ?? 0) ^ (bBytes[i % bBytes.length] ?? 0);
+				(aBytes[i % aBytes.length] ?? 0) ^ (bBytes[i % bBytes.length] ?? 0)
 		}
-		return false;
+		return false
 	}
 
-	let result = 0;
+	let result = 0
 	for (let i = 0; i < aBytes.length; i++) {
-		result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+		result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0)
 	}
-	return result === 0;
+	return result === 0
 }

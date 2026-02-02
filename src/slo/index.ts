@@ -17,7 +17,7 @@
  * ## Usage
  *
  * ```typescript
- * import { createSLOTracker } from "@sidequest/core/slo";
+ * import { createSLOTracker } from "@side-quest/core/slo";
  *
  * // Define SLOs
  * const tracker = createSLOTracker({
@@ -80,11 +80,11 @@
  * @module core/slo
  */
 
-export { SLOPersistence } from "./persistence.js";
+export { SLOPersistence } from './persistence.js'
 export {
 	createSLOTracker,
 	SLOTracker,
-} from "./tracker.js";
+} from './tracker.js'
 
 export type {
 	SLOBreachResult,
@@ -94,4 +94,4 @@ export type {
 	SLOTrackerConfig,
 	SLOUnit,
 	SLOWindow,
-} from "./types.js";
+} from './types.js'

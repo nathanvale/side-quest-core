@@ -37,49 +37,49 @@
  * // → { command: "frontmatter", subcommand: "migrate", positional: ["file.md"], flags: { force: "2" } }
  */
 export function parseArgs(argv: string[]): {
-	command: string;
-	subcommand?: string;
-	positional: string[];
-	flags: Record<string, string | boolean | (string | boolean)[]>;
+	command: string
+	subcommand?: string
+	positional: string[]
+	flags: Record<string, string | boolean | (string | boolean)[]>
 } {
-	const positional: string[] = [];
-	const flags: Record<string, string | boolean | (string | boolean)[]> = {};
+	const positional: string[] = []
+	const flags: Record<string, string | boolean | (string | boolean)[]> = {}
 
 	for (let i = 0; i < argv.length; i++) {
-		const arg = argv[i];
-		if (!arg) continue;
-		if (arg.startsWith("--")) {
-			const [keyRaw, value] = arg.split("=");
-			const key = keyRaw?.slice(2);
-			if (!key) continue;
-			const next = argv[i + 1];
+		const arg = argv[i]
+		if (!arg) continue
+		if (arg.startsWith('--')) {
+			const [keyRaw, value] = arg.split('=')
+			const key = keyRaw?.slice(2)
+			if (!key) continue
+			const next = argv[i + 1]
 
 			const setValue = (newValue: string | boolean) => {
-				const existing = flags[key];
+				const existing = flags[key]
 				if (existing === undefined) {
-					flags[key] = newValue;
+					flags[key] = newValue
 				} else if (Array.isArray(existing)) {
-					existing.push(newValue);
+					existing.push(newValue)
 				} else {
-					flags[key] = [existing, newValue];
+					flags[key] = [existing, newValue]
 				}
-			};
+			}
 
 			if (value !== undefined) {
-				setValue(value);
-			} else if (next && !next.startsWith("--")) {
-				setValue(next);
-				i++;
+				setValue(value)
+			} else if (next && !next.startsWith('--')) {
+				setValue(next)
+				i++
 			} else {
-				setValue(true);
+				setValue(true)
 			}
 		} else {
-			positional.push(arg);
+			positional.push(arg)
 		}
 	}
 
-	const [command, subcommand, ...rest] = positional;
-	return { command: command ?? "", subcommand, positional: rest, flags };
+	const [command, subcommand, ...rest] = positional
+	return { command: command ?? '', subcommand, positional: rest, flags }
 }
 
 /**
@@ -99,16 +99,16 @@ export function parseArgs(argv: string[]): {
 export function parseKeyValuePairs(
 	inputs: ReadonlyArray<string>,
 ): Record<string, string> {
-	const entries: Record<string, string> = {};
+	const entries: Record<string, string> = {}
 	for (const input of inputs) {
-		const [rawKey, ...rest] = input.split("=");
-		if (!rawKey || rest.length === 0) continue;
-		const key = rawKey.trim();
-		const value = rest.join("=").trim();
-		if (!key || !value) continue;
-		entries[key] = value;
+		const [rawKey, ...rest] = input.split('=')
+		if (!rawKey || rest.length === 0) continue
+		const key = rawKey.trim()
+		const value = rest.join('=').trim()
+		if (!key || !value) continue
+		entries[key] = value
 	}
-	return entries;
+	return entries
 }
 
 /**
@@ -129,38 +129,38 @@ export function parseKeyValuePairs(
  * coerceValue("hello") // → "hello"
  */
 export function coerceValue(raw: string): unknown {
-	const trimmed = raw.trim();
-	if (trimmed.length === 0) return trimmed;
-	if (trimmed === "true") return true;
-	if (trimmed === "false") return false;
-	if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
+	const trimmed = raw.trim()
+	if (trimmed.length === 0) return trimmed
+	if (trimmed === 'true') return true
+	if (trimmed === 'false') return false
+	if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed)
 	if (
-		(trimmed.startsWith("[") && trimmed.endsWith("]")) ||
-		(trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+		(trimmed.startsWith('[') && trimmed.endsWith(']')) ||
+		(trimmed.startsWith('{') && trimmed.endsWith('}')) ||
 		(trimmed.startsWith('"') && trimmed.endsWith('"'))
 	) {
 		try {
-			return JSON.parse(trimmed);
+			return JSON.parse(trimmed)
 		} catch {
 			// fall through to comma/identity parsing
 		}
 	}
-	if (trimmed.includes(",")) {
+	if (trimmed.includes(',')) {
 		const segments = trimmed
-			.split(",")
+			.split(',')
 			.map((s) => s.trim())
-			.filter(Boolean);
+			.filter(Boolean)
 		// Prose detection: if segments average more than 2 words, this is a
 		// sentence with commas rather than a tag/value list — return as string.
 		const avgWordCount =
 			segments.reduce((sum, s) => sum + s.split(/\s+/).length, 0) /
-			segments.length;
+			segments.length
 		if (avgWordCount > 2) {
-			return trimmed;
+			return trimmed
 		}
-		return segments;
+		return segments
 	}
-	return trimmed;
+	return trimmed
 }
 
 /**
@@ -182,11 +182,11 @@ export function parseDirs(
 	value: string | boolean | undefined,
 	defaults?: ReadonlyArray<string>,
 ): ReadonlyArray<string> | undefined {
-	if (typeof value !== "string") return defaults;
+	if (typeof value !== 'string') return defaults
 	return value
-		.split(",")
+		.split(',')
 		.map((s) => s.trim())
-		.filter(Boolean);
+		.filter(Boolean)
 }
 
 /**
@@ -209,30 +209,30 @@ export function parseDirs(
 export function parseArgOverrides(
 	argFlags: string | boolean | (string | boolean)[] | undefined,
 ): Record<string, string> {
-	const overrides: Record<string, string> = {};
+	const overrides: Record<string, string> = {}
 
 	// Normalize to array of strings only
-	let stringFlags: string[];
-	if (typeof argFlags === "string") {
-		stringFlags = [argFlags];
+	let stringFlags: string[]
+	if (typeof argFlags === 'string') {
+		stringFlags = [argFlags]
 	} else if (Array.isArray(argFlags)) {
-		stringFlags = argFlags.filter((v): v is string => typeof v === "string");
+		stringFlags = argFlags.filter((v): v is string => typeof v === 'string')
 	} else {
-		stringFlags = [];
+		stringFlags = []
 	}
 
 	for (const arg of stringFlags) {
-		const [rawKey, ...valueParts] = arg.split("=");
+		const [rawKey, ...valueParts] = arg.split('=')
 		if (rawKey && valueParts.length > 0) {
-			const key = rawKey.trim();
-			const value = valueParts.join("=").trim();
+			const key = rawKey.trim()
+			const value = valueParts.join('=').trim()
 			// Skip entries with empty key or value (after trimming)
 			if (key && value) {
-				overrides[key] = value;
+				overrides[key] = value
 			}
 		}
 	}
-	return overrides;
+	return overrides
 }
 
 /**
@@ -255,9 +255,9 @@ export function normalizeFlagValue(
 	value: string | boolean | (string | boolean)[] | undefined,
 ): string | boolean | undefined {
 	if (Array.isArray(value)) {
-		return value[0];
+		return value[0]
 	}
-	return value;
+	return value
 }
 
 /**
@@ -276,14 +276,14 @@ export function normalizeFlagValue(
 export function normalizeFlags(
 	flags: Record<string, string | boolean | (string | boolean)[]>,
 ): Record<string, string | boolean> {
-	const normalized: Record<string, string | boolean> = {};
+	const normalized: Record<string, string | boolean> = {}
 	for (const [key, value] of Object.entries(flags)) {
-		const norm = normalizeFlagValue(value);
+		const norm = normalizeFlagValue(value)
 		if (norm !== undefined) {
-			normalized[key] = norm;
+			normalized[key] = norm
 		}
 	}
-	return normalized;
+	return normalized
 }
 
 /**
@@ -305,11 +305,11 @@ export function normalizeFlags(
 export function parseCommaSeparatedList(
 	value: string | boolean | undefined,
 ): string[] {
-	if (typeof value !== "string") return [];
+	if (typeof value !== 'string') return []
 	return value
-		.split(",")
+		.split(',')
 		.map((s) => s.trim())
-		.filter(Boolean);
+		.filter(Boolean)
 }
 
 /**
@@ -338,13 +338,13 @@ export function getStringFlag(
 	flags: Record<string, string | boolean | (string | boolean)[]>,
 	key: string,
 ): string | undefined {
-	const value = flags[key];
-	if (typeof value === "string") return value;
+	const value = flags[key]
+	if (typeof value === 'string') return value
 	if (Array.isArray(value)) {
-		const firstString = value.find((v): v is string => typeof v === "string");
-		return firstString;
+		const firstString = value.find((v): v is string => typeof v === 'string')
+		return firstString
 	}
-	return undefined;
+	return undefined
 }
 
 /**
@@ -361,7 +361,7 @@ export function getStringFlag(
  * @param details - Optional additional error details (JSON only)
  *
  * @example
- * import { ResponseFormat } from "@sidequest/core/mcp-response";
+ * import { ResponseFormat } from "@side-quest/core/mcp-response";
  * outputError(ResponseFormat.JSON, "Missing required flag --session-id");
  *
  * @example
@@ -372,23 +372,23 @@ export function getStringFlag(
  * );
  */
 export function outputError(
-	format: "json" | "markdown",
+	format: 'json' | 'markdown',
 	message: string,
 	details?: Record<string, unknown>,
 ): never {
-	if (format === "json") {
+	if (format === 'json') {
 		console.log(
 			JSON.stringify({
 				success: false,
 				error: message,
 				...(details ? { details } : {}),
 			}),
-		);
+		)
 	} else {
-		console.error(`Error: ${message}`);
+		console.error(`Error: ${message}`)
 		if (details) {
-			console.error(JSON.stringify(details, null, 2));
+			console.error(JSON.stringify(details, null, 2))
 		}
 	}
-	process.exit(1);
+	process.exit(1)
 }

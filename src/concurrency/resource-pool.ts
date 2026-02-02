@@ -16,7 +16,7 @@
  * ## Example
  *
  * ```typescript
- * import { ResourcePool } from "@sidequest/core/concurrency";
+ * import { ResourcePool } from "@side-quest/core/concurrency";
  *
  * const parserPool = new ResourcePool<string, Parser>();
  *
@@ -44,8 +44,8 @@
  * Prevents duplicate creation if called concurrently with same key.
  */
 export class ResourcePool<K, V> {
-	private cache = new Map<K, V>();
-	private pending = new Map<K, Promise<V>>();
+	private cache = new Map<K, V>()
+	private pending = new Map<K, Promise<V>>()
 
 	/**
 	 * Get a cached resource or create it using the factory.
@@ -58,25 +58,25 @@ export class ResourcePool<K, V> {
 	async getOrCreate(key: K, factory: (key: K) => Promise<V>): Promise<V> {
 		// Return cached value if available
 		if (this.cache.has(key)) {
-			return this.cache.get(key)!;
+			return this.cache.get(key)!
 		}
 
 		// Return pending promise if factory is already running for this key
 		if (this.pending.has(key)) {
-			return this.pending.get(key)!;
+			return this.pending.get(key)!
 		}
 
 		// Create new resource
-		const promise = factory(key);
-		this.pending.set(key, promise);
+		const promise = factory(key)
+		this.pending.set(key, promise)
 
 		try {
-			const value = await promise;
-			this.cache.set(key, value);
-			return value;
+			const value = await promise
+			this.cache.set(key, value)
+			return value
 		} finally {
 			// Always clean up pending promise, even if factory throws
-			this.pending.delete(key);
+			this.pending.delete(key)
 		}
 	}
 
@@ -87,7 +87,7 @@ export class ResourcePool<K, V> {
 	 * @returns True if the resource is cached
 	 */
 	has(key: K): boolean {
-		return this.cache.has(key);
+		return this.cache.has(key)
 	}
 
 	/**
@@ -97,7 +97,7 @@ export class ResourcePool<K, V> {
 	 * @returns The cached resource or undefined
 	 */
 	get(key: K): V | undefined {
-		return this.cache.get(key);
+		return this.cache.get(key)
 	}
 
 	/**
@@ -107,7 +107,7 @@ export class ResourcePool<K, V> {
 	 * @param value - The resource value
 	 */
 	set(key: K, value: V): void {
-		this.cache.set(key, value);
+		this.cache.set(key, value)
 	}
 
 	/**
@@ -117,21 +117,21 @@ export class ResourcePool<K, V> {
 	 * @returns True if the resource was removed, false if it didn't exist
 	 */
 	delete(key: K): boolean {
-		return this.cache.delete(key);
+		return this.cache.delete(key)
 	}
 
 	/**
 	 * Clear all cached resources.
 	 */
 	clear(): void {
-		this.cache.clear();
-		this.pending.clear();
+		this.cache.clear()
+		this.pending.clear()
 	}
 
 	/**
 	 * Get the number of cached resources.
 	 */
 	get size(): number {
-		return this.cache.size;
+		return this.cache.size
 	}
 }

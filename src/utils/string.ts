@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { capitalize } from "@sidequest/core/utils/string";
+ * import { capitalize } from "@side-quest/core/utils/string";
  *
  * capitalize("hello"); // "Hello"
  * capitalize(""); // ""
@@ -31,6 +31,6 @@
  * ```
  */
 export function capitalize(str: string): string {
-	if (!str) return str;
-	return str.charAt(0).toUpperCase() + str.slice(1);
+	if (!str) return str
+	return str.charAt(0).toUpperCase() + str.slice(1)
 }

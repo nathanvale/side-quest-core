@@ -15,7 +15,7 @@
  * ## Usage
  *
  * ```typescript
- * import { processInParallelChunks } from "@sidequest/core/concurrency";
+ * import { processInParallelChunks } from "@side-quest/core/concurrency";
  *
  * // Basic usage
  * const results = await processInParallelChunks({
@@ -49,20 +49,20 @@ export interface ParallelChunkOptions<T, R> {
 	/**
 	 * Items to process.
 	 */
-	items: T[];
+	items: T[]
 
 	/**
 	 * Number of items to process in parallel per chunk.
 	 *
 	 * @default 10
 	 */
-	chunkSize?: number;
+	chunkSize?: number
 
 	/**
 	 * Stop after collecting this many results.
 	 * If not specified, processes all items.
 	 */
-	maxResults?: number;
+	maxResults?: number
 
 	/**
 	 * Process a single item.
@@ -73,7 +73,7 @@ export interface ParallelChunkOptions<T, R> {
 	 * @param item - Item to process
 	 * @returns Processed result(s)
 	 */
-	processor: (item: T) => Promise<R[] | R>;
+	processor: (item: T) => Promise<R[] | R>
 
 	/**
 	 * Handle errors during processing.
@@ -87,7 +87,7 @@ export interface ParallelChunkOptions<T, R> {
 	 * @param error - Error that occurred
 	 * @returns Fallback result(s) or rethrow
 	 */
-	onError?: (item: T, error: Error) => R[] | R;
+	onError?: (item: T, error: Error) => R[] | R
 }
 
 /**
@@ -133,58 +133,58 @@ export interface ParallelChunkOptions<T, R> {
 export async function processInParallelChunks<T, R>(
 	options: ParallelChunkOptions<T, R>,
 ): Promise<R[]> {
-	const { items, chunkSize = 10, maxResults, processor, onError } = options;
+	const { items, chunkSize = 10, maxResults, processor, onError } = options
 
-	const results: R[] = [];
+	const results: R[] = []
 
 	// Process items in chunks
 	for (let i = 0; i < items.length; i += chunkSize) {
 		// Early termination if we've hit maxResults
 		if (maxResults !== undefined && results.length >= maxResults) {
-			break;
+			break
 		}
 
 		// Get current chunk
-		const chunk = items.slice(i, i + chunkSize);
+		const chunk = items.slice(i, i + chunkSize)
 
 		// Process chunk in parallel
 		const chunkResults = await Promise.all(
 			chunk.map(async (item) => {
 				try {
-					return await processor(item);
+					return await processor(item)
 				} catch (error) {
 					if (onError) {
 						// Error handler provided - use it
-						return onError(item, error as Error);
+						return onError(item, error as Error)
 					}
 					// No error handler - propagate
-					throw error;
+					throw error
 				}
 			}),
-		);
+		)
 
 		// Flatten and collect results
 		for (const itemResults of chunkResults) {
 			// Handle both single results and arrays
 			const resultsArray = Array.isArray(itemResults)
 				? itemResults
-				: [itemResults];
+				: [itemResults]
 
 			for (const result of resultsArray) {
-				results.push(result);
+				results.push(result)
 				// Check early termination after each result
 				if (maxResults !== undefined && results.length >= maxResults) {
-					break;
+					break
 				}
 			}
 
 			// Early termination at chunk level
 			if (maxResults !== undefined && results.length >= maxResults) {
-				break;
+				break
 			}
 		}
 	}
 
 	// Slice to exact maxResults if specified
-	return maxResults !== undefined ? results.slice(0, maxResults) : results;
+	return maxResults !== undefined ? results.slice(0, maxResults) : results
 }
