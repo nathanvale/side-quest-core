@@ -4,7 +4,7 @@
 	"baseBranch": "main",
 	"changelog": [
 		"@changesets/changelog-github",
-		{ "repo": "nathanvale/core" }
+		{ "repo": "nathanvale/side-quest-core" }
 	],
 	"commit": false,
 	"packages": ["."],

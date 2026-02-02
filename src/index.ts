@@ -1,11 +1,13 @@
 /**
- * Main entry point for the library.
+ * @sidequest/core
  *
- * Replace this with your actual exports.
+ * Shared utilities for Bun/TypeScript projects.
+ *
+ * Import from subpath exports for tree-shaking:
+ *   import { tool, z } from "@sidequest/core/mcp";
+ *   import { spawnAndCollect } from "@sidequest/core/spawn";
+ *
+ * @packageDocumentation
  */
-
-export function greet(name: string): string {
-	return `Hello, ${name}!`
-}
 
 export const VERSION = '0.0.0'

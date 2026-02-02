@@ -8,12 +8,102 @@
 	},
 	"license": "MIT",
 	"type": "module",
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
 	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
+		"./cli": {
+			"types": "./dist/src/cli/index.d.ts",
+			"import": "./dist/src/cli/index.js"
+		},
+		"./compression": {
+			"types": "./dist/src/compression/index.d.ts",
+			"import": "./dist/src/compression/index.js"
+		},
+		"./concurrency": {
+			"types": "./dist/src/concurrency/index.d.ts",
+			"import": "./dist/src/concurrency/index.js"
+		},
+		"./errors": {
+			"types": "./dist/src/errors/index.d.ts",
+			"import": "./dist/src/errors/index.js"
+		},
+		"./formatters": {
+			"types": "./dist/src/formatters/index.d.ts",
+			"import": "./dist/src/formatters/index.js"
+		},
+		"./fs": {
+			"types": "./dist/src/fs/index.d.ts",
+			"import": "./dist/src/fs/index.js"
+		},
+		"./geo": {
+			"types": "./dist/src/geo/index.d.ts",
+			"import": "./dist/src/geo/index.js"
+		},
+		"./git": {
+			"types": "./dist/src/git/index.d.ts",
+			"import": "./dist/src/git/index.js"
+		},
+		"./glob": {
+			"types": "./dist/src/glob/index.d.ts",
+			"import": "./dist/src/glob/index.js"
+		},
+		"./hash": {
+			"types": "./dist/src/hash/index.d.ts",
+			"import": "./dist/src/hash/index.js"
+		},
+		"./html": {
+			"types": "./dist/src/html/index.d.ts",
+			"import": "./dist/src/html/index.js"
+		},
+		"./instrumentation": {
+			"types": "./dist/src/instrumentation/index.d.ts",
+			"import": "./dist/src/instrumentation/index.js"
+		},
+		"./logging": {
+			"types": "./dist/src/logging/index.d.ts",
+			"import": "./dist/src/logging/index.js"
+		},
+		"./mcp": {
+			"types": "./dist/src/mcp/index.d.ts",
+			"import": "./dist/src/mcp/index.js"
+		},
+		"./oauth": {
+			"types": "./dist/src/oauth/index.d.ts",
+			"import": "./dist/src/oauth/index.js"
+		},
+		"./password": {
+			"types": "./dist/src/password/index.d.ts",
+			"import": "./dist/src/password/index.js"
+		},
+		"./slo": {
+			"types": "./dist/src/slo/index.d.ts",
+			"import": "./dist/src/slo/index.js"
+		},
+		"./spawn": {
+			"types": "./dist/src/spawn/index.d.ts",
+			"import": "./dist/src/spawn/index.js"
+		},
+		"./streams": {
+			"types": "./dist/src/streams/index.d.ts",
+			"import": "./dist/src/streams/index.js"
+		},
+		"./terminal": {
+			"types": "./dist/src/terminal/index.d.ts",
+			"import": "./dist/src/terminal/index.js"
+		},
+		"./testing": {
+			"types": "./dist/src/testing/index.d.ts",
+			"import": "./dist/src/testing/index.js"
+		},
+		"./utils": {
+			"types": "./dist/src/utils/index.d.ts",
+			"import": "./dist/src/utils/index.js"
+		},
+		"./validation": {
+			"types": "./dist/src/validation/index.d.ts",
+			"import": "./dist/src/validation/index.js"
+		},
+		"./vtt": {
+			"types": "./dist/src/vtt/index.d.ts",
+			"import": "./dist/src/vtt/index.js"
 		},
 		"./package.json": "./package.json"
 	},
@@ -25,12 +115,12 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nathanvale/core.git"
+		"url": "git+https://github.com/nathanvale/side-quest-core.git"
 	},
 	"bugs": {
-		"url": "https://github.com/nathanvale/core/issues"
+		"url": "https://github.com/nathanvale/side-quest-core/issues"
 	},
-	"homepage": "https://github.com/nathanvale/core#readme",
+	"homepage": "https://github.com/nathanvale/side-quest-core#readme",
 	"keywords": [
 		"typescript",
 		"bun",
@@ -80,7 +170,12 @@
 		"version:pre": "changeset version",
 		"watch:types": "tsc -p tsconfig.eslint.json --noEmit --watch"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@logtape/file": "^0.12.0",
+		"@logtape/logtape": "^0.12.0",
+		"@modelcontextprotocol/sdk": "^1.20.0",
+		"zod": "^3.23.8"
+	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.2",
 		"@biomejs/biome": "^2.3.7",
