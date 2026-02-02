@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+### Patch Changes
+
+- [#11](https://github.com/nathanvale/side-quest-core/pull/11) [`a08953e`](https://github.com/nathanvale/side-quest-core/commit/a08953e15d387198f3c160a1b49936165019eb58) Thanks [@nathanvale](https://github.com/nathanvale)! - fix(ci): add build step before npm publish in changesets workflow
+
 ## 0.1.0
 
 ### Minor Changes
