@@ -26,6 +26,7 @@ export default defineConfig({
 		'./src/utils/index.ts',
 		'./src/validation/index.ts',
 		'./src/vtt/index.ts',
+		'./src/mcp-response/index.ts',
 	],
 	outDir: './dist',
 	target: 'bun',
