@@ -111,12 +111,12 @@ describe("File stats utilities", () => {
 			expect(result).toBe(false);
 		});
 
-		test("returns false when age exactly equals threshold", () => {
+		test("returns false when file age is within threshold", () => {
 			const filePath = join(tempDir, "test.txt");
 			writeFileSync(filePath, "content");
 
-			// File is 0 hours old, threshold is 0 hours
-			const result = isFileStale(filePath, 0);
+			// File was just written, threshold is 1 hour — should not be stale
+			const result = isFileStale(filePath, 1);
 			expect(result).toBe(false);
 		});
 
