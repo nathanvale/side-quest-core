@@ -698,7 +698,7 @@ export function readJsonFileOrDefault<T>(filePath: string, defaultValue: T): T {
  */
 export function findUpSync(
 	filename: string,
-	startDir = process.cwd(),
+	startDir: string = process.cwd(),
 ): string | null {
 	let dir = startDir;
 	while (true) {
@@ -716,7 +716,7 @@ export function findUpSync(
  * @param startDir - Directory to start search (default: cwd)
  * @returns Path to project root, or null if not found
  */
-export function findProjectRoot(startDir = process.cwd()): string | null {
+export function findProjectRoot(startDir: string = process.cwd()): string | null {
 	const pkgPath = findUpSync("package.json", startDir);
 	return pkgPath ? path.dirname(pkgPath) : null;
 }

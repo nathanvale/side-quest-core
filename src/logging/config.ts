@@ -5,7 +5,7 @@
  */
 
 /** Maximum log file size before rotation (1 MiB) */
-export const DEFAULT_MAX_SIZE = 0x400 * 0x400;
+export const DEFAULT_MAX_SIZE: number = 0x400 * 0x400;
 
 /** Number of rotated files to keep */
 export const DEFAULT_MAX_FILES = 5;

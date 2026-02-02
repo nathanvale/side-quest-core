@@ -471,7 +471,7 @@ export const SPINNER_FRAMES = [
 	"⠧",
 	"⠇",
 	"⠏",
-];
+] as const;
 
 /**
  * Get a spinner frame for the current time
@@ -695,7 +695,13 @@ export function parseOutputFormat(flag?: string): OutputFormat {
  * console.log(emphasize.warn("Careful!"));
  * ```
  */
-export const emphasize = {
+export const emphasize: {
+	success: (text: string) => string;
+	info: (text: string) => string;
+	warn: (text: string) => string;
+	error: (text: string) => string;
+	dim: (text: string) => string;
+} = {
 	success: (text: string) => green(text),
 	info: (text: string) => cyan(text),
 	warn: (text: string) => yellow(text),

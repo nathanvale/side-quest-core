@@ -100,7 +100,7 @@ export function saveTokenFile(tokenPath: string, token: OAuthToken): void {
  */
 export function isTokenExpired(
 	token: OAuthToken,
-	bufferMs = 5 * 60 * 1000, // 5 minutes default
+	bufferMs: number = 5 * 60 * 1000, // 5 minutes default
 ): boolean {
 	const now = Date.now();
 	return token.expiry_date <= now + bufferMs;

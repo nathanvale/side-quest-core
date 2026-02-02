@@ -119,7 +119,7 @@ export function validateGlob(pattern: string): ValidationResult {
  * While modern spawn APIs use array-based arguments (not shell strings),
  * validating against these provides an additional security layer.
  */
-export const SHELL_METACHARACTERS = /[;&|<>`$\\]/;
+export const SHELL_METACHARACTERS: RegExp = /[;&|<>`$\\]/;
 
 /**
  * Validate that a pattern doesn't contain dangerous shell metacharacters.
@@ -196,7 +196,7 @@ const MAX_QUANTIFIER_NESTING = 2;
  */
 export function isRegexSafe(
 	pattern: string,
-	maxLength = DEFAULT_MAX_PATTERN_LENGTH,
+	maxLength: number = DEFAULT_MAX_PATTERN_LENGTH,
 ): boolean {
 	// Check for known dangerous patterns
 	for (const dangerous of REDOS_PATTERNS) {
