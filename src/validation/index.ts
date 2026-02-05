@@ -13,6 +13,11 @@
  */
 
 export {
+	type ValidateAbsoluteFilePathOptions,
+	validateAbsoluteFilePath,
+} from './file-paths.ts'
+export { isSafeFilename, validateFilename } from './filenames.ts'
+export {
 	validateClassifierId,
 	validateFieldName,
 	validateTemplateName,
@@ -29,6 +34,7 @@ export {
 	isRegexSafe,
 	isValidGlob,
 	SHELL_METACHARACTERS,
+	SHELL_METACHARACTERS_STRICT,
 	type ValidationResult,
 	validateGlob,
 	validateRegex,

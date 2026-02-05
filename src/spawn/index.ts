@@ -415,3 +415,9 @@ export function escapeShellArg(arg: string): string {
 export function escapeShellArgs(args: string[]): string {
 	return args.map(escapeShellArg).join(' ')
 }
+
+// ============================================================================
+// Tool detection (async companions)
+// ============================================================================
+
+export { ensureToolAvailable, isToolAvailable } from './tool-detection.js'

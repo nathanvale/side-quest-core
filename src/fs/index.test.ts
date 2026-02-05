@@ -9,6 +9,8 @@ import {
 	ensureFileSync,
 	findProjectRoot,
 	findUpSync,
+	isEmptyFileSync,
+	isSymlinkSync,
 	readJsonFileOrDefault,
 	readLinesSync,
 	withTempDir,
@@ -206,6 +208,72 @@ describe('path utilities', () => {
 
 	it('fs.existsSync returns false for non-existing paths', () => {
 		expect(fs.existsSync('/definitely/not/a/real/path')).toBe(false)
+	})
+})
+
+describe('isSymlinkSync', () => {
+	it('returns true for a symbolic link', () => {
+		const tmpDir = makeTmpDir()
+		const target = path.join(tmpDir, 'target.txt')
+		const link = path.join(tmpDir, 'link.txt')
+		fs.writeFileSync(target, 'data')
+		fs.symlinkSync(target, link)
+
+		expect(isSymlinkSync(link)).toBe(true)
+
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it('returns false for a regular file', () => {
+		const tmpDir = makeTmpDir()
+		const file = path.join(tmpDir, 'regular.txt')
+		fs.writeFileSync(file, 'data')
+
+		expect(isSymlinkSync(file)).toBe(false)
+
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it('returns false for a directory', () => {
+		const tmpDir = makeTmpDir()
+		expect(isSymlinkSync(tmpDir)).toBe(false)
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it('returns false for non-existent path', () => {
+		expect(isSymlinkSync('/definitely/not/a/real/path')).toBe(false)
+	})
+})
+
+describe('isEmptyFileSync', () => {
+	it('returns true for an empty file', () => {
+		const tmpDir = makeTmpDir()
+		const file = path.join(tmpDir, 'empty.txt')
+		fs.writeFileSync(file, '')
+
+		expect(isEmptyFileSync(file)).toBe(true)
+
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it('returns false for a file with content', () => {
+		const tmpDir = makeTmpDir()
+		const file = path.join(tmpDir, 'data.txt')
+		fs.writeFileSync(file, 'some data')
+
+		expect(isEmptyFileSync(file)).toBe(false)
+
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it('returns false for non-existent path', () => {
+		expect(isEmptyFileSync('/definitely/not/a/real/path')).toBe(false)
+	})
+
+	it('returns false for a directory', () => {
+		const tmpDir = makeTmpDir()
+		expect(isEmptyFileSync(tmpDir)).toBe(false)
+		fs.rmSync(tmpDir, { recursive: true, force: true })
 	})
 })
 
