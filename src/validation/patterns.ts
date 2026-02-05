@@ -122,6 +122,18 @@ export function validateGlob(pattern: string): ValidationResult {
 export const SHELL_METACHARACTERS: RegExp = /[;&|<>`$\\]/
 
 /**
+ * Strict shell metacharacter pattern that also blocks parentheses and quotes.
+ *
+ * Characters: ; & | ` $ ( ) < > " ' \
+ *
+ * Why stricter than `SHELL_METACHARACTERS`: Parentheses enable subshell
+ * execution `(cmd)` and function definitions. Quotes can break out of
+ * quoting contexts in shell strings. Use this for validating file paths
+ * that may be interpolated into shell commands.
+ */
+export const SHELL_METACHARACTERS_STRICT: RegExp = /[;&|`$()<>"'\\]/
+
+/**
  * Validate that a pattern doesn't contain dangerous shell metacharacters.
  * Provides defense-in-depth security even when using array-based spawn
  * (which doesn't use shell interpretation).

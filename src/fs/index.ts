@@ -14,6 +14,7 @@ import {
 	renameSync as fsRenameSync,
 	unlinkSync as fsUnlinkSync,
 	mkdirSync,
+	lstatSync as nodeLstatSync,
 	statSync as nodeStatSync,
 	readdirSync,
 	readFileSync,
@@ -501,6 +502,40 @@ export function statSync(filePath: string): {
 	return nodeStatSync(filePath)
 }
 
+/**
+ * Check if a path is a symbolic link.
+ *
+ * Uses `lstatSync` (not `statSync`) because `statSync` follows symlinks
+ * and would report the target's type instead of the link itself.
+ *
+ * @param filePath - Path to check
+ * @returns true if path is a symbolic link, false otherwise (including non-existent)
+ */
+export function isSymlinkSync(filePath: string): boolean {
+	try {
+		return nodeLstatSync(filePath).isSymbolicLink()
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Check if a file is empty (0 bytes).
+ *
+ * Useful for detecting placeholder files, iCloud not-yet-synced files,
+ * or corrupted downloads that need to be skipped or re-fetched.
+ *
+ * @param filePath - Path to check
+ * @returns true if file exists and has 0 bytes
+ */
+export function isEmptyFileSync(filePath: string): boolean {
+	try {
+		return nodeStatSync(filePath).size === 0
+	} catch {
+		return false
+	}
+}
+
 // ============================================
 // BUN-SPECIFIC UTILITIES - Re-exports from specialized modules
 // These are kept here for backwards compatibility
@@ -804,6 +839,12 @@ export {
 	hasConfigAtRoot,
 	type NearestConfigResult,
 } from './config.js'
+// JSON state management utilities
+export {
+	loadJsonStateSync,
+	saveJsonStateSync,
+	updateJsonFileAtomic,
+} from './json-state.js'
 // Path utilities
 export {
 	expandTilde,
