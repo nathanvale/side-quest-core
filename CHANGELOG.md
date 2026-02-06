@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- [#17](https://github.com/nathanvale/side-quest-core/pull/17) [`1cc6e57`](https://github.com/nathanvale/side-quest-core/commit/1cc6e57f972ebf5a24f6c9d4b6c0acdcc166b2ee) Thanks [@nathanvale](https://github.com/nathanvale)! - Add reusable validation, spawn, and fs utilities extracted from voice-memo plugin
+
+  - `isSafeFilename` / `validateFilename` - whitelist-based filename validation with optional extension matching
+  - `validateAbsoluteFilePath` - defense-in-depth absolute path validation (shell metachar rejection, existence, extension)
+  - `SHELL_METACHARACTERS_STRICT` - broader metacharacter pattern blocking parens and quotes
+  - `isToolAvailable` / `ensureToolAvailable` - async tool detection with actionable install hints
+  - `loadJsonStateSync` / `saveJsonStateSync` / `updateJsonFileAtomic` - Zod-validated JSON state management with atomic writes and file locking
+  - `isSymlinkSync` / `isEmptyFileSync` - lightweight filesystem helpers
+
 ## 0.1.1
 
 ### Patch Changes

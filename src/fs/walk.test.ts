@@ -202,7 +202,7 @@ describe('walkDirectory', () => {
 		// Act
 		walkDirectory(
 			tempDir,
-			(fullPath, relativePath) => {
+			(_fullPath, relativePath) => {
 				visited.push(relativePath)
 			},
 			{ skipHidden: true, skipDirs: ['node_modules'] },
