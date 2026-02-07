@@ -40,6 +40,9 @@ report.*.json
 # OS
 .DS_Store
 
+# Husky local markers
+.husky/.protection-verified
+
 # Claude Code local memory
 CLAUDE.local.md
 
