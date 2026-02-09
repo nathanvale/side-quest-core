@@ -209,6 +209,25 @@ describe('buildJsdocHealthReport', () => {
 		expect(report.overallScore).toBe(77.5)
 		expect(report.topIssues.map((issue) => issue.code)).toContain('missing_example')
 	})
+
+	it('deduplicates repeated module filters before scoring', () => {
+		const rootDir = createTempRoot()
+		const catalog = seedCatalogFixture(rootDir)
+
+		const report = buildJsdocHealthReport(
+			catalog,
+			rootDir,
+			['beta', 'alpha', 'alpha', 'beta'],
+			join(rootDir, 'dist', 'catalog.json'),
+			join(rootDir, '.artifacts', 'jsdoc-health-report.json'),
+		)
+
+		expect(report.moduleFilter).toEqual(['alpha', 'beta'])
+		expect(report.moduleCount).toBe(2)
+		expect(report.functionCount).toBe(2)
+		expect(report.modules.map((module) => module.name)).toEqual(['alpha', 'beta'])
+		expect(report.overallScore).toBe(77.5)
+	})
 })
 
 describe('runJsdocHealth', () => {

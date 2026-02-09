@@ -565,8 +565,11 @@ export function buildJsdocHealthReport(
 	reportPath: string,
 ): JsdocHealthReport {
 	const allModuleNames = Object.keys(catalog.modules).sort()
+	const normalizedModuleFilter = Array.from(new Set(moduleFilter))
 	const selectedModules =
-		moduleFilter.length > 0 ? moduleFilter.slice().sort() : allModuleNames
+		normalizedModuleFilter.length > 0
+			? normalizedModuleFilter.slice().sort()
+			: allModuleNames
 
 	const unknownModules = selectedModules.filter(
 		(name) => !(name in catalog.modules),
@@ -655,7 +658,7 @@ export function buildJsdocHealthReport(
 		packageVersion: catalog.packageVersion,
 		catalogPath,
 		reportPath,
-		moduleFilter: moduleFilter.length > 0 ? moduleFilter : null,
+		moduleFilter: normalizedModuleFilter.length > 0 ? selectedModules : null,
 		moduleCount: modules.length,
 		functionCount: totalFunctions,
 		overallScore: Number(overallScore.toFixed(2)),
