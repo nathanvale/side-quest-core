@@ -23,9 +23,12 @@ const DEFAULT_MAX_MODULES = 3
 const DEFAULT_MAX_FUNCTIONS = 40
 const DEFAULT_MAX_TOKENS = 120_000
 const DEFAULT_TIMEOUT_MS = 600_000
-const DEFAULT_LLM_MODEL = 'gpt-4o-mini'
+const DEFAULT_OPENAI_MODEL = 'gpt-4o-mini'
+const DEFAULT_ANTHROPIC_MODEL = 'claude-3-5-haiku-latest'
 const OPENAI_API_BASE_URL = 'https://api.openai.com/v1'
+const ANTHROPIC_API_BASE_URL = 'https://api.anthropic.com/v1'
 const TIER2_COMPLETION_TOKEN_BUDGET = 260
+const ANTHROPIC_VERSION_HEADER = '2023-06-01'
 
 const ISSUE_PENALTIES = {
 	name_restatement: 10,
@@ -50,6 +53,9 @@ export type IssueCode = keyof typeof ISSUE_PENALTIES
 
 /** Supported status values for optional Tier 2 assessment. */
 export type Tier2Status = 'completed' | 'partial' | 'skipped' | 'failed'
+
+/** Supported Tier 2 LLM provider backends. */
+export type Tier2Provider = 'openai' | 'anthropic'
 
 /** Reason why Tier 2 was skipped, stopped early, or failed. */
 export type Tier2StopReason =
@@ -201,6 +207,15 @@ export type Tier2Evaluator = (
 	candidate: Tier2FunctionCandidate,
 	context: Tier2EvaluatorContext,
 ) => Promise<Tier2Evaluation>
+
+/** Resolved provider runtime configuration for one Tier 2 run. */
+export interface Tier2ProviderConfig {
+	provider: Tier2Provider
+	model: string
+	evaluator: Tier2Evaluator
+	credentialEnvVar: string
+	credentialError: string | null
+}
 
 interface Tier2ExecutionResult {
 	tier2: Tier2Report
@@ -1031,6 +1046,23 @@ export function isTier2TimeoutError(error: unknown): boolean {
 }
 
 /**
+ * Parse a configured Tier 2 provider value.
+ *
+ * @param rawProvider - Provider string from environment
+ * @returns Normalized provider identifier
+ */
+export function parseTier2Provider(
+	rawProvider: string | undefined,
+): Tier2Provider {
+	const normalized = rawProvider?.trim().toLowerCase()
+	if (!normalized || normalized === 'openai') return 'openai'
+	if (normalized === 'anthropic') return 'anthropic'
+	throw new Error(
+		`Unsupported Tier 2 provider "${rawProvider}". Use "openai" or "anthropic".`,
+	)
+}
+
+/**
  * Extract chat-completion message content from an OpenAI-compatible payload.
  *
  * @param payload - Parsed JSON payload from provider
@@ -1072,6 +1104,44 @@ export function extractOpenAiMessageContent(payload: unknown): string {
 	}
 
 	throw new Error('LLM response had no readable message content')
+}
+
+/**
+ * Extract text message content from an Anthropic responses payload.
+ *
+ * @param payload - Parsed JSON payload from provider
+ * @returns Combined text content
+ */
+export function extractAnthropicMessageContent(payload: unknown): string {
+	if (typeof payload !== 'object' || payload === null) {
+		throw new Error('Invalid LLM response payload')
+	}
+
+	const content = (payload as { content?: unknown }).content
+	if (!Array.isArray(content) || content.length === 0) {
+		throw new Error('LLM response contained no content blocks')
+	}
+
+	const textParts = content
+		.map((block) => {
+			if (typeof block !== 'object' || block === null) return ''
+			const typedBlock = block as { type?: unknown; text?: unknown }
+			if (
+				typedBlock.type === 'text' &&
+				typeof typedBlock.text === 'string' &&
+				typedBlock.text.trim().length > 0
+			) {
+				return typedBlock.text
+			}
+			return ''
+		})
+		.filter((part) => part.length > 0)
+
+	if (textParts.length === 0) {
+		throw new Error('LLM response had no readable text blocks')
+	}
+
+	return textParts.join('\n')
 }
 
 /**
@@ -1158,6 +1228,125 @@ export async function evaluateTier2WithOpenAI(
 }
 
 /**
+ * Evaluate one function using Anthropic's messages API.
+ *
+ * @param candidate - Function candidate details
+ * @param context - Runtime context containing model + timeout
+ * @returns Parsed Tier 2 evaluation from model output
+ */
+export async function evaluateTier2WithAnthropic(
+	candidate: Tier2FunctionCandidate,
+	context: Tier2EvaluatorContext,
+): Promise<Tier2Evaluation> {
+	const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
+	if (!apiKey) {
+		throw new Error('ANTHROPIC_API_KEY is not set')
+	}
+
+	if (context.remainingMs <= 0) {
+		throw new Error('Tier 2 timeout budget exhausted before request')
+	}
+
+	const apiBase =
+		process.env.ANTHROPIC_BASE_URL?.trim() || ANTHROPIC_API_BASE_URL
+	const endpoint = `${apiBase.replace(/\/$/, '')}/messages`
+	const controller = new AbortController()
+	const timeout = setTimeout(() => controller.abort(), context.remainingMs)
+
+	let response: Response
+	try {
+		response = await fetch(endpoint, {
+			method: 'POST',
+			headers: {
+				'x-api-key': apiKey,
+				'anthropic-version': ANTHROPIC_VERSION_HEADER,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				model: context.model,
+				max_tokens: 300,
+				temperature: 0,
+				system:
+					'You score JSDoc quality for developer tooling. Return strict JSON only.',
+				messages: [{ role: 'user', content: buildTier2Prompt(candidate) }],
+			}),
+			signal: controller.signal,
+		})
+	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			throw new Error('Tier 2 provider request timed out')
+		}
+		throw new Error(
+			`Tier 2 provider request failed: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	} finally {
+		clearTimeout(timeout)
+	}
+
+	if (!response.ok) {
+		let bodyText = ''
+		try {
+			bodyText = await response.text()
+		} catch {
+			bodyText = ''
+		}
+		const suffix = bodyText.length > 0 ? `: ${bodyText.slice(0, 240)}` : ''
+		throw new Error(`Tier 2 provider returned HTTP ${response.status}${suffix}`)
+	}
+
+	let payload: unknown
+	try {
+		payload = await response.json()
+	} catch (error) {
+		throw new Error(
+			`Tier 2 provider returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
+	const content = extractAnthropicMessageContent(payload)
+	return parseTier2EvaluationFromText(content)
+}
+
+/**
+ * Resolve provider, model, evaluator, and credential requirements for Tier 2.
+ *
+ * @returns Provider runtime configuration
+ */
+export function resolveTier2ProviderConfig(): Tier2ProviderConfig {
+	const provider = parseTier2Provider(process.env.JSDOC_HEALTH_PROVIDER)
+
+	if (provider === 'anthropic') {
+		const model =
+			process.env.JSDOC_HEALTH_MODEL?.trim() ||
+			process.env.ANTHROPIC_MODEL?.trim() ||
+			DEFAULT_ANTHROPIC_MODEL
+		return {
+			provider,
+			model,
+			evaluator: evaluateTier2WithAnthropic,
+			credentialEnvVar: 'ANTHROPIC_API_KEY',
+			credentialError: process.env.ANTHROPIC_API_KEY?.trim()
+				? null
+				: 'ANTHROPIC_API_KEY is not set',
+		}
+	}
+
+	const model =
+		process.env.JSDOC_HEALTH_MODEL?.trim() ||
+		process.env.OPENAI_MODEL?.trim() ||
+		DEFAULT_OPENAI_MODEL
+	return {
+		provider,
+		model,
+		evaluator: evaluateTier2WithOpenAI,
+		credentialEnvVar: 'OPENAI_API_KEY',
+		credentialError: process.env.OPENAI_API_KEY?.trim()
+			? null
+			: 'OPENAI_API_KEY is not set',
+	}
+}
+
+/**
  * Convert a Tier 2 evaluation triple into one averaged score.
  *
  * @param evaluation - Parsed Tier 2 result
@@ -1194,10 +1383,42 @@ export async function runTier2Assessment(
 		}
 	}
 
+	let providerConfig: Tier2ProviderConfig | null = null
+	try {
+		providerConfig = evaluator ? null : resolveTier2ProviderConfig()
+	} catch (error) {
+		const message =
+			error instanceof Error
+				? error.message
+				: 'Failed to resolve Tier 2 provider'
+		return {
+			tier2: {
+				status: 'failed',
+				model: process.env.JSDOC_HEALTH_MODEL?.trim() || null,
+				score: null,
+				coverage: {
+					processedFunctions: 0,
+					eligibleFunctions: 0,
+					processedModules: 0,
+					eligibleModules: 0,
+					skippedFunctions: 0,
+					skippedModules: 0,
+				},
+				stopReason: 'provider_error',
+				assessments: [],
+			},
+			warnings: [
+				`Tier 2 provider configuration error: ${message}. Falling back to Tier 1-only results.`,
+			],
+			providerFailure: true,
+			timedOut: false,
+		}
+	}
 	const model =
 		process.env.JSDOC_HEALTH_MODEL?.trim() ||
-		process.env.OPENAI_MODEL?.trim() ||
-		DEFAULT_LLM_MODEL
+		(providerConfig
+			? providerConfig.model
+			: process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL)
 
 	const selection = selectTier2Candidates(report, options.tier2Budgets)
 	const coverage: Tier2Coverage = {
@@ -1225,7 +1446,7 @@ export async function runTier2Assessment(
 		}
 	}
 
-	if (!evaluator && !process.env.OPENAI_API_KEY?.trim()) {
+	if (!evaluator && providerConfig && providerConfig.credentialError) {
 		return {
 			tier2: {
 				status: 'failed',
@@ -1236,14 +1457,29 @@ export async function runTier2Assessment(
 				assessments: [],
 			},
 			warnings: [
-				'Tier 2 requested but OPENAI_API_KEY is not set. Falling back to Tier 1-only results.',
+				`Tier 2 requested but ${providerConfig.credentialError}. Falling back to Tier 1-only results.`,
 			],
 			providerFailure: true,
 			timedOut: false,
 		}
 	}
 
-	const runtimeEvaluator = evaluator ?? evaluateTier2WithOpenAI
+	const runtimeEvaluator = evaluator ?? providerConfig?.evaluator
+	if (!runtimeEvaluator) {
+		return {
+			tier2: {
+				status: 'failed',
+				model,
+				score: null,
+				coverage,
+				stopReason: 'provider_error',
+				assessments: [],
+			},
+			warnings: ['Tier 2 provider evaluator was not resolved.'],
+			providerFailure: true,
+			timedOut: false,
+		}
+	}
 	const assessments: Tier2FunctionAssessment[] = []
 	const processedModuleNames = new Set<string>()
 	const warnings: string[] = []
@@ -1463,6 +1699,11 @@ Flags:
   --max-tokens     Tier 2 token budget estimate (default: 120000)
   --timeout-ms     Tier 2 timeout budget in milliseconds (default: 600000)
   --help, -h       Show this usage`)
+	console.log(`\nEnv:
+  JSDOC_HEALTH_PROVIDER  Tier 2 provider backend: openai (default) | anthropic
+  JSDOC_HEALTH_MODEL     Override provider model
+  OPENAI_API_KEY         Required when provider=openai
+  ANTHROPIC_API_KEY      Required when provider=anthropic`)
 }
 
 /**

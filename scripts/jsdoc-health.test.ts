@@ -6,6 +6,7 @@ import type { Catalog } from './generate-catalog.ts'
 import {
 	buildJsdocHealthReport,
 	countSignatureParameters,
+	extractAnthropicMessageContent,
 	type FunctionHealth,
 	hasGenericFiller,
 	isNameRestatement,
@@ -16,6 +17,8 @@ import {
 	parseCliArgs,
 	parseFunctionDocTagsFromDts,
 	parseTier2EvaluationFromText,
+	parseTier2Provider,
+	resolveTier2ProviderConfig,
 	runJsdocHealth,
 	scoreFunctionDocumentation,
 	selectTier2Candidates,
@@ -48,6 +51,32 @@ async function withEnvUnset(keys: string[], run: () => Promise<void>): Promise<v
 	} finally {
 		for (const key of keys) {
 			const prior = previous.get(key)
+			if (prior === undefined) {
+				delete process.env[key]
+			} else {
+				process.env[key] = prior
+			}
+		}
+	}
+}
+
+async function withEnvValues(
+	entries: Record<string, string | undefined>,
+	run: () => Promise<void> | void,
+): Promise<void> {
+	const previous = new Map<string, string | undefined>()
+	for (const [key, value] of Object.entries(entries)) {
+		previous.set(key, process.env[key])
+		if (value === undefined) {
+			delete process.env[key]
+		} else {
+			process.env[key] = value
+		}
+	}
+	try {
+		await run()
+	} finally {
+		for (const [key, prior] of previous.entries()) {
 			if (prior === undefined) {
 				delete process.env[key]
 			} else {
@@ -306,6 +335,48 @@ describe('isTier2TimeoutError', () => {
 		expect(isTier2TimeoutError(new Error('Tier 2 provider request timed out'))).toBe(true)
 		expect(isTier2TimeoutError(new Error('reached --timeout-ms budget'))).toBe(true)
 		expect(isTier2TimeoutError(new Error('simulated provider outage'))).toBe(false)
+	})
+})
+
+describe('tier2 provider resolution', () => {
+	it('parses provider names with openai default', () => {
+		expect(parseTier2Provider(undefined)).toBe('openai')
+		expect(parseTier2Provider('openai')).toBe('openai')
+		expect(parseTier2Provider('anthropic')).toBe('anthropic')
+	})
+
+	it('throws for unsupported provider names', () => {
+		expect(() => parseTier2Provider('ollama')).toThrow('Unsupported Tier 2 provider "ollama"')
+	})
+
+	it('resolves anthropic provider config and credential checks', async () => {
+		await withEnvValues(
+			{
+				JSDOC_HEALTH_PROVIDER: 'anthropic',
+				JSDOC_HEALTH_MODEL: undefined,
+				ANTHROPIC_MODEL: 'claude-3-5-haiku-latest',
+				ANTHROPIC_API_KEY: undefined,
+			},
+			() => {
+				const config = resolveTier2ProviderConfig()
+				expect(config.provider).toBe('anthropic')
+				expect(config.credentialEnvVar).toBe('ANTHROPIC_API_KEY')
+				expect(config.credentialError).toBe('ANTHROPIC_API_KEY is not set')
+				expect(config.model).toBe('claude-3-5-haiku-latest')
+			},
+		)
+	})
+
+	it('extracts anthropic text content blocks', () => {
+		const text = extractAnthropicMessageContent({
+			content: [
+				{
+					type: 'text',
+					text: '{"clarity":90,"discoverability":85,"completeness":88,"summary":"Solid."}',
+				},
+			],
+		})
+		expect(text).toContain('"clarity":90')
 	})
 })
 
@@ -595,5 +666,57 @@ describe('runJsdocHealth', () => {
 		})
 
 		expect(exitCode).toBe(1)
+	})
+
+	it('uses provider-specific credential checks for anthropic', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		await withEnvValues(
+			{
+				JSDOC_HEALTH_PROVIDER: 'anthropic',
+				ANTHROPIC_API_KEY: undefined,
+				OPENAI_API_KEY: undefined,
+			},
+			async () => {
+				const exitCode = await runJsdocHealth(
+					['--llm', '--report', '.artifacts/tier2-missing-anthropic-key.json'],
+					rootDir,
+				)
+				expect(exitCode).toBe(0)
+			},
+		)
+
+		const report = JSON.parse(
+			readFileSync(join(rootDir, '.artifacts', 'tier2-missing-anthropic-key.json'), 'utf-8'),
+		) as JsdocHealthReport
+		expect(report.tier2.status).toBe('failed')
+		expect(report.warnings.some((warning) => warning.includes('ANTHROPIC_API_KEY'))).toBe(true)
+	})
+
+	it('handles unsupported provider config as provider_error', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		await withEnvValues(
+			{
+				JSDOC_HEALTH_PROVIDER: 'unsupported-provider',
+			},
+			async () => {
+				const exitCode = await runJsdocHealth(
+					['--llm', '--report', '.artifacts/tier2-invalid-provider.json'],
+					rootDir,
+				)
+				expect(exitCode).toBe(0)
+			},
+		)
+
+		const report = JSON.parse(
+			readFileSync(join(rootDir, '.artifacts', 'tier2-invalid-provider.json'), 'utf-8'),
+		) as JsdocHealthReport
+		expect(report.tier2.stopReason).toBe('provider_error')
+		expect(
+			report.warnings.some((warning) => warning.includes('provider configuration error')),
+		).toBe(true)
 	})
 })
