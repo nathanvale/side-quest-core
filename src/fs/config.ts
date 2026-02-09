@@ -6,9 +6,19 @@
  * Used by runner plugins to detect whether a tool is configured.
  */
 
-import { exists } from 'node:fs/promises'
+import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { getGitRoot } from '../git/index.js'
+
+/** Check if a path exists using stat (Node.js-compatible, unlike node:fs/promises exists). */
+async function fileExists(filePath: string): Promise<boolean> {
+	try {
+		await stat(filePath)
+		return true
+	} catch {
+		return false
+	}
+}
 
 /** Result of checking for a config file at the repository root. */
 export interface ConfigAtRootResult {
@@ -50,7 +60,7 @@ export async function hasConfigAtRoot(
 
 	for (const configFile of configNames) {
 		const configPath = join(gitRoot, configFile)
-		if (await exists(configPath)) {
+		if (await fileExists(configPath)) {
 			return { found: true, configPath, searchPath: gitRoot }
 		}
 	}
@@ -83,7 +93,7 @@ export async function findNearestConfig(
 	while (currentDir.startsWith(gitRoot)) {
 		for (const configFile of configNames) {
 			const configPath = join(currentDir, configFile)
-			if (await exists(configPath)) {
+			if (await fileExists(configPath)) {
 				return { found: true, configPath, configDir: currentDir }
 			}
 		}

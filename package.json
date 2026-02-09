@@ -136,7 +136,7 @@
 		"biome"
 	],
 	"engines": {
-		"node": ">=22.20"
+		"bun": ">=1.2"
 	},
 	"publishConfig": {
 		"access": "public",
