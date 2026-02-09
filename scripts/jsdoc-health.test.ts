@@ -87,6 +87,27 @@ declare function parseOptions(argv: string[], defaults: object): object;`
 		const tags = parseFunctionDocTagsFromDts(dts)
 		expect(tags.get('parseOptions')).toEqual({ hasExample: true, paramTagCount: 2 })
 	})
+
+	it('handles export declare function form', () => {
+		const dts = `/**
+ * Parse options.
+ * @param argv - input arguments
+ * @param defaults - default values
+ * @example
+ * parseOptions(['--debug'])
+ */
+export declare function parseOptions(argv: string[], defaults: object): object;`
+
+		const tags = parseFunctionDocTagsFromDts(dts)
+		expect(tags.get('parseOptions')).toEqual({ hasExample: true, paramTagCount: 2 })
+	})
+
+	it('handles export declare without jsdoc', () => {
+		const dts = `export declare function orphan(): void;`
+
+		const tags = parseFunctionDocTagsFromDts(dts)
+		expect(tags.get('orphan')).toEqual({ hasExample: false, paramTagCount: 0 })
+	})
 })
 
 describe('mapExportedFunctionDocTags', () => {
@@ -100,6 +121,19 @@ declare function parseOptions2(argv: string[]): object;`
 		const js = `export { parseOptions2 as parseOptions };`
 		const tags = mapExportedFunctionDocTags(dts, js)
 		expect(tags.get('parseOptions')).toEqual({ hasExample: true, paramTagCount: 0 })
+	})
+
+	it('maps alias exports with export declare function form', () => {
+		const dts = `/**
+ * Parse options.
+ * @param argv - input arguments
+ * @example
+ * parseOptions([])
+ */
+export declare function parseOptions2(argv: string[]): object;`
+		const js = `export { parseOptions2 as parseOptions };`
+		const tags = mapExportedFunctionDocTags(dts, js)
+		expect(tags.get('parseOptions')).toEqual({ hasExample: true, paramTagCount: 1 })
 	})
 })
 

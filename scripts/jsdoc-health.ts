@@ -382,7 +382,7 @@ export function parseFunctionDocTagsFromDts(
 	for (let i = 0; i < lines.length; i++) {
 		const match = (lines[i] as string)
 			.trim()
-			.match(/^declare\s+function\s+(\w+)/)
+			.match(/^(?:export\s+)?declare\s+function\s+(\w+)/)
 		if (!match) continue
 
 		const name = match[1] as string
