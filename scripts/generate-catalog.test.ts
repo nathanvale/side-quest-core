@@ -11,8 +11,10 @@ import {
 	getExpectedModuleNamesFromPackageExports,
 	getJsdocDescription,
 	hasCatalogSkip,
+	mapDtsExportedRuntimeNamesToLocals,
 	parseDeclarations,
 	parseJsExportBindings,
+	resolveDeclarationLocalNameForExportBinding,
 	validateFunctionJsdoc,
 } from './generate-catalog.ts'
 
@@ -226,6 +228,51 @@ describe('parseJsExportBindings', () => {
 	})
 })
 
+describe('d.ts export binding resolution', () => {
+	it('maps exported runtime names to local declaration names from .d.ts aliases', () => {
+		const dts = `declare function unescapeGitPath2(gitPath: string): string;
+declare function categorizeError(error: unknown): string;
+type HiddenType = string;
+export { unescapeGitPath2 as unescapeGitPath, categorizeError, type HiddenType };`
+
+		const declarations = parseDeclarations(dts)
+		const declarationByLocalName = new Map(
+			declarations.map((declaration) => [declaration.name, declaration]),
+		)
+		const exportedToLocal = mapDtsExportedRuntimeNamesToLocals(dts, declarationByLocalName)
+
+		expect(exportedToLocal.get('unescapeGitPath')).toBe('unescapeGitPath2')
+		expect(exportedToLocal.get('categorizeError')).toBe('categorizeError')
+		expect(exportedToLocal.has('HiddenType')).toBe(false)
+	})
+
+	it('resolves JS runtime bindings when local names diverge from .d.ts names', () => {
+		const dts = `declare function unescapeGitPath2(gitPath: string): string;
+declare function categorizeError(error: unknown): string;
+export { unescapeGitPath2 as unescapeGitPath, categorizeError };`
+
+		const declarations = parseDeclarations(dts)
+		const declarationByLocalName = new Map(
+			declarations.map((declaration) => [declaration.name, declaration]),
+		)
+		const exportedToLocal = mapDtsExportedRuntimeNamesToLocals(dts, declarationByLocalName)
+
+		const resolvedGitName = resolveDeclarationLocalNameForExportBinding(
+			{ local: 'unescapeGitPath', exported: 'unescapeGitPath' },
+			declarationByLocalName,
+			exportedToLocal,
+		)
+		const resolvedMcpName = resolveDeclarationLocalNameForExportBinding(
+			{ local: 'categorizeError2', exported: 'categorizeError' },
+			declarationByLocalName,
+			exportedToLocal,
+		)
+
+		expect(resolvedGitName).toBe('unescapeGitPath2')
+		expect(resolvedMcpName).toBe('categorizeError')
+	})
+})
+
 describe('getExpectedModuleNamesFromPackageExports', () => {
 	it('returns module names from dist/src import targets', () => {
 		const exportsField = {
@@ -404,8 +451,12 @@ describe.skipIf(!existsSync('dist/src'))('integration', () => {
 		// Re-export + alias correctness checks
 		expect(catalog.modules.git?.exports).toContain('unescapeGitPath')
 		expect(catalog.modules.git?.exports).not.toContain('unescapeGitPath2')
+		expect(catalog.modules.git?.declarations.some((d) => d.name === 'unescapeGitPath')).toBe(true)
 		expect(catalog.modules.mcp?.exports).toContain('z')
 		expect(catalog.modules.fs?.exports).toContain('readFileSync')
+		expect(
+			catalog.modules['mcp-response']?.declarations.some((d) => d.name === 'categorizeError'),
+		).toBe(true)
 
 		// Wrapper artifacts exist and are importable
 		expect(existsSync('dist/catalog.js')).toBe(true)

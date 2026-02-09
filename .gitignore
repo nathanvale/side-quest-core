@@ -50,6 +50,7 @@ CLAUDE.local.md
 # Test artifacts
 test-results/
 .vitest/
+.artifacts/
 
 #Obsidian vault
 .vault/
