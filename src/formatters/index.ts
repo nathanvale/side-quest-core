@@ -54,8 +54,7 @@ export {
 	formatTime12Hour,
 } from './time.ts'
 
-// Legacy colors object for existing code that uses colors.red, colors.green, etc.
-// This provides the raw ANSI codes that were previously exported
+/** @catalog-skip Legacy ANSI color codes object */
 export const colors = {
 	reset: '\x1b[0m',
 	dim: '\x1b[2m',
