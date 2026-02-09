@@ -91,20 +91,28 @@ export function bgColor(input: ColorInput, text?: string): string {
 	return bg
 }
 
-/** ANSI reset code */
+/** @catalog-skip ANSI reset code */
 export const RESET = '\x1b[0m'
 
-/** ANSI style codes */
+/** @catalog-skip ANSI style codes */
 export const BOLD = '\x1b[1m'
+/** @catalog-skip */
 export const DIM = '\x1b[2m'
+/** @catalog-skip */
 export const ITALIC = '\x1b[3m'
+/** @catalog-skip */
 export const UNDERLINE = '\x1b[4m'
+/** @catalog-skip */
 export const BLINK = '\x1b[5m'
+/** @catalog-skip */
 export const INVERSE = '\x1b[7m'
+/** @catalog-skip */
 export const HIDDEN = '\x1b[8m'
+/** @catalog-skip */
 export const STRIKETHROUGH = '\x1b[9m'
 
 /**
+ * @catalog-skip - Use color() for programmatic styling
  * Apply bold style to text
  */
 export function bold(text: string): string {
@@ -112,6 +120,7 @@ export function bold(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() for programmatic styling
  * Apply dim style to text
  */
 export function dim(text: string): string {
@@ -119,6 +128,7 @@ export function dim(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() for programmatic styling
  * Apply italic style to text
  */
 export function italic(text: string): string {
@@ -126,6 +136,7 @@ export function italic(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() for programmatic styling
  * Apply underline style to text
  */
 export function underline(text: string): string {
@@ -133,6 +144,7 @@ export function underline(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() for programmatic styling
  * Apply strikethrough style to text
  */
 export function strikethrough(text: string): string {
@@ -140,6 +152,7 @@ export function strikethrough(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() for programmatic styling
  * Apply inverse (swap foreground/background) style
  */
 export function inverse(text: string): string {
@@ -151,6 +164,7 @@ export function inverse(text: string): string {
 // ============================================================================
 
 /**
+ * @catalog-skip - Use color() instead
  * Red text for errors
  */
 export function red(text: string): string {
@@ -158,6 +172,7 @@ export function red(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() instead
  * Green text for success
  */
 export function green(text: string): string {
@@ -165,6 +180,7 @@ export function green(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() instead
  * Yellow text for warnings
  */
 export function yellow(text: string): string {
@@ -172,6 +188,7 @@ export function yellow(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() instead
  * Blue text for info
  */
 export function blue(text: string): string {
@@ -179,6 +196,7 @@ export function blue(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() instead
  * Magenta text
  */
 export function magenta(text: string): string {
@@ -186,6 +204,7 @@ export function magenta(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() instead
  * Cyan text
  */
 export function cyan(text: string): string {
@@ -193,6 +212,7 @@ export function cyan(text: string): string {
 }
 
 /**
+ * @catalog-skip - Use color() instead
  * Gray text for secondary content
  */
 export function gray(text: string): string {
@@ -204,35 +224,50 @@ export function gray(text: string): string {
 // ============================================================================
 
 /**
- * Format an error message
+ * Format an error message with a red cross icon
+ *
+ * @param message - The error message to format
+ * @returns Formatted string with red ✖ prefix
  */
 export function error(message: string): string {
 	return `${color('red', '✖')} ${message}`
 }
 
 /**
- * Format a success message
+ * Format a success message with a green check icon
+ *
+ * @param message - The success message to format
+ * @returns Formatted string with green ✔ prefix
  */
 export function success(message: string): string {
 	return `${color('green', '✔')} ${message}`
 }
 
 /**
- * Format a warning message
+ * Format a warning message with a yellow caution icon
+ *
+ * @param message - The warning message to format
+ * @returns Formatted string with yellow ⚠ prefix
  */
 export function warning(message: string): string {
 	return `${color('yellow', '⚠')} ${message}`
 }
 
 /**
- * Format an info message
+ * Format an info message with a blue info icon
+ *
+ * @param message - The info message to format
+ * @returns Formatted string with blue ℹ prefix
  */
 export function info(message: string): string {
 	return `${color('blue', 'ℹ')} ${message}`
 }
 
 /**
- * Format a debug message
+ * Format a debug message with a dimmed hexagon icon
+ *
+ * @param message - The debug message to format
+ * @returns Formatted string with dimmed ⬢ prefix and dimmed text
  */
 export function debug(message: string): string {
 	return `${dim('⬢')} ${dim(message)}`
@@ -458,6 +493,7 @@ export function progressBar(
 }
 
 /**
+ * @catalog-skip - Use spinner() instead
  * Spinner frames for loading animations
  */
 export const SPINNER_FRAMES = [
@@ -488,7 +524,7 @@ export function spinner(intervalMs = 80): string {
 // Box drawing
 // ============================================================================
 
-/** Box drawing characters */
+/** @catalog-skip Box drawing characters */
 export const BOX = {
 	topLeft: '┌',
 	topRight: '┐',

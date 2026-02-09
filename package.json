@@ -109,6 +109,11 @@
 			"types": "./dist/src/mcp-response/index.d.ts",
 			"import": "./dist/src/mcp-response/index.js"
 		},
+		"./catalog": {
+			"types": "./dist/catalog.d.ts",
+			"import": "./dist/catalog.js"
+		},
+		"./catalog.json": "./dist/catalog.json",
 		"./package.json": "./package.json"
 	},
 	"files": [
@@ -140,6 +145,7 @@
 	"sideEffects": false,
 	"scripts": {
 		"build": "bunx bunup",
+		"postbuild": "bun scripts/generate-catalog.ts",
 		"check": "biome check --write .",
 		"check:publint": "publint",
 		"check:types": "attw --pack",
