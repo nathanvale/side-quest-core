@@ -6,14 +6,21 @@ import type { Catalog } from './generate-catalog.ts'
 import {
 	buildJsdocHealthReport,
 	countSignatureParameters,
+	type FunctionHealth,
 	hasGenericFiller,
 	isNameRestatement,
+	isTier2TimeoutError,
+	type JsdocHealthReport,
+	type ModuleHealth,
 	mapExportedFunctionDocTags,
 	parseCliArgs,
 	parseFunctionDocTagsFromDts,
+	parseTier2EvaluationFromText,
 	runJsdocHealth,
 	scoreFunctionDocumentation,
+	selectTier2Candidates,
 	splitIdentifierWords,
+	type Tier2Evaluator,
 } from './jsdoc-health.ts'
 
 const tempDirs: string[] = []
@@ -30,12 +37,125 @@ function createTempRoot(): string {
 	return dir
 }
 
+async function withEnvUnset(keys: string[], run: () => Promise<void>): Promise<void> {
+	const previous = new Map<string, string | undefined>()
+	for (const key of keys) {
+		previous.set(key, process.env[key])
+		delete process.env[key]
+	}
+	try {
+		await run()
+	} finally {
+		for (const key of keys) {
+			const prior = previous.get(key)
+			if (prior === undefined) {
+				delete process.env[key]
+			} else {
+				process.env[key] = prior
+			}
+		}
+	}
+}
+
+function makeFunctionHealth(moduleName: string, functionName: string): FunctionHealth {
+	return {
+		moduleName,
+		name: functionName,
+		signature: `function ${functionName}(input: string): string`,
+		description: `Function ${functionName} description for deterministic selection`,
+		score: 100,
+		rating: 'Excellent',
+		parameterCount: 1,
+		hasExample: true,
+		paramTagCount: 1,
+		issues: [],
+	}
+}
+
+function makeModuleHealth(name: string, functionNames: string[]): ModuleHealth {
+	return {
+		name,
+		functionCount: functionNames.length,
+		score: 100,
+		rating: 'Excellent',
+		issuesByCode: {
+			name_restatement: 0,
+			description_too_short: 0,
+			generic_filler: 0,
+			missing_example: 0,
+			missing_param_tags: 0,
+			description_too_long: 0,
+		},
+		functions: functionNames.map((functionName) => makeFunctionHealth(name, functionName)),
+	}
+}
+
+function makeSyntheticReport(modules: ModuleHealth[]): JsdocHealthReport {
+	return {
+		jsdocHealthSchemaVersion: 2,
+		generated: '2026-02-09T00:00:00.000Z',
+		packageVersion: '0.3.0',
+		catalogPath: '/tmp/catalog.json',
+		reportPath: '/tmp/report.json',
+		moduleFilter: null,
+		moduleCount: modules.length,
+		functionCount: modules.reduce((sum, module) => sum + module.functionCount, 0),
+		overallScore: 100,
+		overallRating: 'Excellent',
+		topIssues: [],
+		modules,
+		warnings: [],
+		tier2: {
+			status: 'skipped',
+			model: null,
+			score: null,
+			coverage: {
+				processedFunctions: 0,
+				eligibleFunctions: 0,
+				processedModules: 0,
+				eligibleModules: 0,
+				skippedFunctions: 0,
+				skippedModules: 0,
+			},
+			stopReason: 'manual_skip',
+			assessments: [],
+		},
+	}
+}
+
 describe('parseCliArgs', () => {
 	it('parses module filters and thresholds', () => {
 		const options = parseCliArgs(['--module', 'fs,mcp', '--module', 'cli', '--fail-under', '72.5'])
 		expect(options).not.toBeNull()
 		expect(options?.moduleFilter).toEqual(['fs', 'mcp', 'cli'])
 		expect(options?.failUnder).toBe(72.5)
+	})
+
+	it('parses llm and budget controls', () => {
+		const options = parseCliArgs([
+			'--llm',
+			'--llm-strict',
+			'--max-modules',
+			'5',
+			'--max-functions',
+			'12',
+			'--max-tokens',
+			'90000',
+			'--timeout-ms',
+			'450000',
+		])
+		expect(options?.llmRequested).toBe(true)
+		expect(options?.llmStrict).toBe(true)
+		expect(options?.tier2Budgets).toEqual({
+			maxModules: 5,
+			maxFunctions: 12,
+			maxTokens: 90000,
+			timeoutMs: 450000,
+		})
+	})
+
+	it('throws when --llm-strict is used without --llm', () => {
+		expect(() => parseCliArgs(['--llm-strict'])).toThrow('--llm-strict requires --llm')
 	})
 })
 
@@ -159,6 +279,71 @@ describe('scoreFunctionDocumentation', () => {
 	})
 })
 
+describe('parseTier2EvaluationFromText', () => {
+	it('parses strict json response', () => {
+		const parsed = parseTier2EvaluationFromText(
+			'{"clarity": 90, "discoverability": 88, "completeness": 86, "summary": "Strong operational guidance."}',
+		)
+		expect(parsed).toEqual({
+			clarity: 90,
+			discoverability: 88,
+			completeness: 86,
+			summary: 'Strong operational guidance.',
+		})
+	})
+
+	it('extracts json from wrapped response text', () => {
+		const parsed = parseTier2EvaluationFromText(
+			'Result:\n```json\n{"clarity": 80, "discoverability": 70, "completeness": 75, "summary": "Good enough."}\n```',
+		)
+		expect(parsed.clarity).toBe(80)
+		expect(parsed.summary).toBe('Good enough.')
+	})
+})
+
+describe('isTier2TimeoutError', () => {
+	it('recognizes timeout-style errors', () => {
+		expect(isTier2TimeoutError(new Error('Tier 2 provider request timed out'))).toBe(true)
+		expect(isTier2TimeoutError(new Error('reached --timeout-ms budget'))).toBe(true)
+		expect(isTier2TimeoutError(new Error('simulated provider outage'))).toBe(false)
+	})
+})
+
+describe('selectTier2Candidates', () => {
+	it('selects candidates deterministically and honors max-modules', () => {
+		const report = makeSyntheticReport([
+			makeModuleHealth('beta', ['zetaFn', 'alphaFn']),
+			makeModuleHealth('alpha', ['twoFn', 'oneFn']),
+			makeModuleHealth('gamma', ['extraFn']),
+		])
+
+		const selection = selectTier2Candidates(report, {
+			maxModules: 2,
+			maxFunctions: 10,
+			maxTokens: 120000,
+			timeoutMs: 600000,
+		})
+
+		expect(selection.stopReason).toBe('max_modules')
+		expect(
+			selection.candidates.map((candidate) => `${candidate.moduleName}.${candidate.functionName}`),
+		).toEqual(['alpha.oneFn', 'alpha.twoFn', 'beta.alphaFn', 'beta.zetaFn'])
+	})
+
+	it('stops before exceeding max-token budget', () => {
+		const report = makeSyntheticReport([makeModuleHealth('alpha', ['oneFn'])])
+		const selection = selectTier2Candidates(report, {
+			maxModules: 3,
+			maxFunctions: 40,
+			maxTokens: 5,
+			timeoutMs: 600000,
+		})
+
+		expect(selection.candidates).toHaveLength(0)
+		expect(selection.stopReason).toBe('max_tokens')
+	})
+})
+
 function seedCatalogFixture(rootDir: string): Catalog {
 	mkdirSync(join(rootDir, 'dist', 'src', 'alpha'), { recursive: true })
 	mkdirSync(join(rootDir, 'dist', 'src', 'beta'), { recursive: true })
@@ -242,6 +427,7 @@ describe('buildJsdocHealthReport', () => {
 		expect(report.functionCount).toBe(2)
 		expect(report.overallScore).toBe(77.5)
 		expect(report.topIssues.map((issue) => issue.code)).toContain('missing_example')
+		expect(report.jsdocHealthSchemaVersion).toBe(2)
 	})
 
 	it('deduplicates repeated module filters before scoring', () => {
@@ -284,5 +470,130 @@ describe('runJsdocHealth', () => {
 
 		const exitFail = await runJsdocHealth(['--fail-under', '90'], rootDir)
 		expect(exitFail).toBe(1)
+	})
+
+	it('runs tier2 with deterministic truncation metadata', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		const evaluator: Tier2Evaluator = async () => ({
+			clarity: 92,
+			discoverability: 90,
+			completeness: 88,
+			summary: 'Clear guidance for model tool selection.',
+		})
+
+		const exitCode = await runJsdocHealth(
+			['--llm', '--max-functions', '1', '--report', '.artifacts/tier2-partial.json'],
+			rootDir,
+			evaluator,
+		)
+		expect(exitCode).toBe(0)
+
+		const report = JSON.parse(
+			readFileSync(join(rootDir, '.artifacts', 'tier2-partial.json'), 'utf-8'),
+		) as JsdocHealthReport
+		expect(report.tier2.status).toBe('partial')
+		expect(report.tier2.stopReason).toBe('max_functions')
+		expect(report.tier2.coverage.processedFunctions).toBe(1)
+		expect(report.tier2.coverage.eligibleFunctions).toBe(2)
+		expect(report.tier2.assessments[0]?.moduleName).toBe('alpha')
+		expect(report.tier2.assessments[0]?.functionName).toBe('parseArgs')
+	})
+
+	it('keeps non-strict llm failures advisory', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		const failingEvaluator: Tier2Evaluator = async () => {
+			throw new Error('simulated provider outage')
+		}
+
+		const exitCode = await runJsdocHealth(
+			['--llm', '--report', '.artifacts/tier2-fail.json'],
+			rootDir,
+			failingEvaluator,
+		)
+		expect(exitCode).toBe(0)
+
+		const report = JSON.parse(
+			readFileSync(join(rootDir, '.artifacts', 'tier2-fail.json'), 'utf-8'),
+		) as JsdocHealthReport
+		expect(report.tier2.status).toBe('failed')
+		expect(report.tier2.stopReason).toBe('provider_error')
+		expect(report.warnings.length).toBeGreaterThan(0)
+	})
+
+	it('enforces strict llm failures', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		const failingEvaluator: Tier2Evaluator = async () => {
+			throw new Error('simulated provider outage')
+		}
+
+		const exitCode = await runJsdocHealth(
+			['--llm', '--llm-strict', '--report', '.artifacts/tier2-strict-fail.json'],
+			rootDir,
+			failingEvaluator,
+		)
+		expect(exitCode).toBe(1)
+	})
+
+	it('classifies timeout evaluator failures with timeout stop reason', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		const timeoutEvaluator: Tier2Evaluator = async () => {
+			throw new Error('request timed out while waiting for model')
+		}
+
+		const exitCode = await runJsdocHealth(
+			['--llm', '--report', '.artifacts/tier2-timeout.json'],
+			rootDir,
+			timeoutEvaluator,
+		)
+		expect(exitCode).toBe(0)
+
+		const report = JSON.parse(
+			readFileSync(join(rootDir, '.artifacts', 'tier2-timeout.json'), 'utf-8'),
+		) as JsdocHealthReport
+		expect(report.tier2.stopReason).toBe('timeout')
+		expect(report.tier2.status).toBe('partial')
+	})
+
+	it('keeps missing OPENAI_API_KEY advisory in non-strict mode', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		await withEnvUnset(['OPENAI_API_KEY'], async () => {
+			const exitCode = await runJsdocHealth(
+				['--llm', '--report', '.artifacts/tier2-missing-key.json'],
+				rootDir,
+			)
+			expect(exitCode).toBe(0)
+		})
+
+		const report = JSON.parse(
+			readFileSync(join(rootDir, '.artifacts', 'tier2-missing-key.json'), 'utf-8'),
+		) as JsdocHealthReport
+		expect(report.tier2.status).toBe('failed')
+		expect(report.tier2.stopReason).toBe('provider_error')
+		expect(report.warnings.some((warning) => warning.includes('OPENAI_API_KEY'))).toBe(true)
+	})
+
+	it('fails missing OPENAI_API_KEY in strict mode', async () => {
+		const rootDir = createTempRoot()
+		seedCatalogFixture(rootDir)
+
+		let exitCode = 0
+		await withEnvUnset(['OPENAI_API_KEY'], async () => {
+			exitCode = await runJsdocHealth(
+				['--llm', '--llm-strict', '--report', '.artifacts/tier2-missing-key-strict.json'],
+				rootDir,
+			)
+		})
+
+		expect(exitCode).toBe(1)
 	})
 })
