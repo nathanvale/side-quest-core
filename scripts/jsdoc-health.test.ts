@@ -413,6 +413,29 @@ describe('selectTier2Candidates', () => {
 		expect(selection.candidates).toHaveLength(0)
 		expect(selection.stopReason).toBe('max_tokens')
 	})
+
+	it('applies max-modules after excluding empty modules', () => {
+		const report = makeSyntheticReport([
+			makeModuleHealth('alpha-empty', []),
+			makeModuleHealth('beta-empty', []),
+			makeModuleHealth('gamma', ['doFn']),
+			makeModuleHealth('zeta', ['laterFn']),
+		])
+
+		const selection = selectTier2Candidates(report, {
+			maxModules: 1,
+			maxFunctions: 10,
+			maxTokens: 120000,
+			timeoutMs: 600000,
+		})
+
+		expect(selection.eligibleModules).toBe(2)
+		expect(selection.eligibleFunctions).toBe(2)
+		expect(selection.stopReason).toBe('max_modules')
+		expect(
+			selection.candidates.map((candidate) => `${candidate.moduleName}.${candidate.functionName}`),
+		).toEqual(['gamma.doFn'])
+	})
 })
 
 function seedCatalogFixture(rootDir: string): Catalog {

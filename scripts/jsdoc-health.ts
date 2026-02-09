@@ -870,15 +870,18 @@ export function selectTier2Candidates(
 	const sortedModules = report.modules
 		.slice()
 		.sort((a, b) => a.name.localeCompare(b.name))
-	const eligibleModules = sortedModules.length
-	const eligibleFunctions = sortedModules.reduce(
+	const candidateModules = sortedModules.filter(
+		(module) => module.functions.length > 0,
+	)
+	const eligibleModules = candidateModules.length
+	const eligibleFunctions = candidateModules.reduce(
 		(sum, module) => sum + module.functions.length,
 		0,
 	)
 
-	const limitedModules = sortedModules.slice(0, budgets.maxModules)
+	const limitedModules = candidateModules.slice(0, budgets.maxModules)
 	let stopReason: Tier2StopReason | null =
-		limitedModules.length < sortedModules.length ? 'max_modules' : null
+		limitedModules.length < candidateModules.length ? 'max_modules' : null
 
 	const candidates: Tier2FunctionCandidate[] = []
 	let tokenTotal = 0
