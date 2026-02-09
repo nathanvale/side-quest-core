@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.1
+
+### Patch Changes
+
+- [#32](https://github.com/nathanvale/side-quest-core/pull/32) [`f6d747d`](https://github.com/nathanvale/side-quest-core/commit/f6d747d8fc72b502d0c37e169f45f3482489b5f9) Thanks [@nathanvale](https://github.com/nathanvale)! - fix: remove incorrect Node.js engine declaration and replace Bun-only fs/promises exists import
+
+  - Replace `"node": ">=22.20"` engine with `"bun": ">=1.2"` since the package uses Bun-specific APIs throughout (Bun.file, Bun.write, Bun.hash, etc.)
+  - Replace `import { exists } from 'node:fs/promises'` in config.ts with a stat-based alternative, since `exists` is a Bun-only API not available in Node.js
+
+  Closes #29, closes #31
+
 ## 0.3.0
 
 ### Minor Changes

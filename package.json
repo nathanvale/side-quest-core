@@ -1,6 +1,6 @@
 {
 	"name": "@side-quest/core",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Shared utilities for Bun/TypeScript projects",
 	"author": {
 		"name": "Nathan Vale",
