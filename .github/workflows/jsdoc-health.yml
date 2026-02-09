@@ -5,6 +5,45 @@ on:
     # 16:00 UTC = 02:00 AEST / 03:00 AEDT
     - cron: '0 16 * * *'
   workflow_dispatch:
+    inputs:
+      run_tier2:
+        description: Run optional Tier 2 LLM quality checks
+        required: false
+        type: boolean
+        default: false
+      llm_strict:
+        description: Fail workflow when Tier 2 provider/timeout errors occur
+        required: false
+        type: boolean
+        default: false
+      tier2_provider:
+        description: Tier 2 provider backend
+        required: false
+        type: choice
+        options:
+          - openai
+          - anthropic
+        default: openai
+      max_modules:
+        description: Tier 2 module budget
+        required: false
+        type: string
+        default: '3'
+      max_functions:
+        description: Tier 2 function budget
+        required: false
+        type: string
+        default: '40'
+      max_tokens:
+        description: Tier 2 token budget
+        required: false
+        type: string
+        default: '120000'
+      timeout_ms:
+        description: Tier 2 timeout budget in milliseconds
+        required: false
+        type: string
+        default: '600000'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,13 +79,47 @@ jobs:
       - name: Build (includes catalog generation)
         run: bun run build
 
-      - name: Run JSDoc health (Tier 1)
-        run: bun run jsdoc:health --json --report .artifacts/jsdoc-health-report.json
+      - name: Run JSDoc health
+        shell: bash
+        env:
+          RUN_TIER2: ${{ inputs.run_tier2 }}
+          LLM_STRICT: ${{ inputs.llm_strict }}
+          TIER2_PROVIDER: ${{ inputs.tier2_provider }}
+          MAX_MODULES: ${{ inputs.max_modules }}
+          MAX_FUNCTIONS: ${{ inputs.max_functions }}
+          MAX_TOKENS: ${{ inputs.max_tokens }}
+          TIMEOUT_MS: ${{ inputs.timeout_ms }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JSDOC_HEALTH_MODEL: ${{ vars.JSDOC_HEALTH_MODEL }}
+        run: |
+          run_tier2="${RUN_TIER2:-false}"
+          llm_strict="${LLM_STRICT:-false}"
+          tier2_provider="${TIER2_PROVIDER:-openai}"
+          max_modules="${MAX_MODULES:-3}"
+          max_functions="${MAX_FUNCTIONS:-40}"
+          max_tokens="${MAX_TOKENS:-120000}"
+          timeout_ms="${TIMEOUT_MS:-600000}"
+
+          cmd=(bun run jsdoc:health --json --report .artifacts/jsdoc-health-report.json)
+
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$run_tier2" == "true" ]]; then
+            export JSDOC_HEALTH_PROVIDER="$tier2_provider"
+            cmd+=(--llm --max-modules "$max_modules" --max-functions "$max_functions" --max-tokens "$max_tokens" --timeout-ms "$timeout_ms")
+            if [[ "$llm_strict" == "true" ]]; then
+              cmd+=(--llm-strict)
+            fi
+          fi
+
+          printf 'Running command:'
+          printf ' %q' "${cmd[@]}"
+          echo
+          "${cmd[@]}"
 
       - name: Append summary
         shell: bash
         run: |
-          node -e "const fs=require('node:fs'); const r=JSON.parse(fs.readFileSync('.artifacts/jsdoc-health-report.json','utf8')); console.log('## JSDoc Health'); console.log(''); console.log('- Overall: '+r.overallScore+'/100 ('+r.overallRating+')'); console.log('- Modules: '+r.moduleCount); console.log('- Functions: '+r.functionCount);" >> "$GITHUB_STEP_SUMMARY"
+          node -e "const fs=require('node:fs'); const r=JSON.parse(fs.readFileSync('.artifacts/jsdoc-health-report.json','utf8')); console.log('## JSDoc Health'); console.log(''); console.log('- Overall: '+r.overallScore+'/100 ('+r.overallRating+')'); console.log('- Modules: '+r.moduleCount); console.log('- Functions: '+r.functionCount); if (r.tier2) { const tier2Score = r.tier2.score === null ? 'n/a' : r.tier2.score + '/100'; console.log('- Tier 2: '+r.tier2.status+' ('+tier2Score+')'); if (r.tier2.stopReason) console.log('- Tier 2 stop reason: '+r.tier2.stopReason); } if (Array.isArray(r.warnings) && r.warnings.length > 0) { console.log('- Warnings: '+r.warnings.length); }" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload health report
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
