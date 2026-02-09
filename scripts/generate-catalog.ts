@@ -480,6 +480,81 @@ export function parseJsExportBindings(jsContent: string): ExportBinding[] {
 }
 
 /**
+ * Normalize an export binding identifier by stripping TS export modifiers.
+ *
+ * `.d.ts` export lists can include `type Foo` or `typeof Foo` entries.
+ * Runtime declaration matching needs the raw identifier (`Foo`).
+ *
+ * @param rawName - Raw binding name from export list parsing
+ * @returns Normalized identifier
+ */
+export function normalizeExportBindingName(rawName: string): string {
+	return rawName
+		.replace(/^type\s+/, '')
+		.replace(/^typeof\s+/, '')
+		.trim()
+}
+
+/**
+ * Build a map of exported runtime names to local declaration names from `.d.ts`.
+ *
+ * This handles cases where `.d.ts` keeps a suffixed local symbol name
+ * (`unescapeGitPath2`) but exports it under the public runtime name
+ * (`unescapeGitPath`).
+ *
+ * @param dtsContent - Content of generated module .d.ts
+ * @param declarationByLocalName - Runtime declarations keyed by local name
+ * @returns Exported name -> local declaration name map
+ */
+export function mapDtsExportedRuntimeNamesToLocals(
+	dtsContent: string,
+	declarationByLocalName: ReadonlyMap<string, Declaration>,
+): Map<string, string> {
+	const map = new Map<string, string>()
+	for (const binding of parseJsExportBindings(dtsContent)) {
+		const local = normalizeExportBindingName(binding.local)
+		const exported = normalizeExportBindingName(binding.exported)
+		if (!local || !exported) continue
+		if (!declarationByLocalName.has(local)) continue
+		if (!map.has(exported)) {
+			map.set(exported, local)
+		}
+	}
+	return map
+}
+
+/**
+ * Resolve which declaration local name corresponds to a JS export binding.
+ *
+ * @param binding - Runtime binding from generated JS
+ * @param declarationByLocalName - Runtime declarations keyed by local name
+ * @param dtsExportedToLocal - `.d.ts` exported name to local name map
+ * @returns Matching local declaration name, or null if no runtime declaration matches
+ */
+export function resolveDeclarationLocalNameForExportBinding(
+	binding: ExportBinding,
+	declarationByLocalName: ReadonlyMap<string, Declaration>,
+	dtsExportedToLocal: ReadonlyMap<string, string>,
+): string | null {
+	const local = normalizeExportBindingName(binding.local)
+	if (local && declarationByLocalName.has(local)) {
+		return local
+	}
+
+	const exported = normalizeExportBindingName(binding.exported)
+	if (exported && declarationByLocalName.has(exported)) {
+		return exported
+	}
+
+	const mappedLocal = exported ? dtsExportedToLocal.get(exported) : undefined
+	if (mappedLocal && declarationByLocalName.has(mappedLocal)) {
+		return mappedLocal
+	}
+
+	return null
+}
+
+/**
  * Collect declaration names marked with @catalog-skip in .d.ts JSDoc blocks.
  *
  * @param dtsContent - Content of a .d.ts file
@@ -794,6 +869,10 @@ export async function generateCatalog(): Promise<Catalog> {
 		const declarationByLocalName = new Map(
 			declarations.map((declaration) => [declaration.name, declaration]),
 		)
+		const dtsExportedToLocal = mapDtsExportedRuntimeNamesToLocals(
+			dtsContent,
+			declarationByLocalName,
+		)
 		const skippedLocalNames = getCatalogSkipDeclarationNames(dtsContent)
 
 		// Parse runtime export names from generated JS so aliases/re-exports stay accurate
@@ -804,7 +883,14 @@ export async function generateCatalog(): Promise<Catalog> {
 			exportBindings.length > 0
 				? new Set(
 						exportBindings
-							.map((binding) => binding.local)
+							.map((binding) =>
+								resolveDeclarationLocalNameForExportBinding(
+									binding,
+									declarationByLocalName,
+									dtsExportedToLocal,
+								),
+							)
+							.filter((name): name is string => name !== null)
 							.filter((name) => !skippedLocalNames.has(name)),
 					)
 				: undefined
@@ -823,12 +909,23 @@ export async function generateCatalog(): Promise<Catalog> {
 		const seenExportNames = new Set<string>()
 
 		for (const binding of exportBindings) {
-			if (skippedLocalNames.has(binding.local)) continue
+			const localName = resolveDeclarationLocalNameForExportBinding(
+				binding,
+				declarationByLocalName,
+				dtsExportedToLocal,
+			)
+			if (
+				skippedLocalNames.has(normalizeExportBindingName(binding.local)) ||
+				(localName !== null && skippedLocalNames.has(localName))
+			) {
+				continue
+			}
 			if (seenExportNames.has(binding.exported)) continue
 			seenExportNames.add(binding.exported)
 			exportNames.push(binding.exported)
 
-			const declaration = declarationByLocalName.get(binding.local)
+			const declaration =
+				localName === null ? undefined : declarationByLocalName.get(localName)
 			if (!declaration) continue
 			mappedDeclarations.push({
 				...declaration,
