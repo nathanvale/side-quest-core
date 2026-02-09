@@ -36,6 +36,7 @@ report.*.json
 .eslintcache
 .parcel-cache/g
 .pack/
+.artifacts/
 
 # OS
 .DS_Store

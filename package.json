@@ -155,6 +155,7 @@
 		"format": "biome format --write .",
 		"format:check": "biome format .",
 		"hygiene": "bun run check:publint && bun run check:types",
+		"jsdoc:health": "bun scripts/jsdoc-health.ts",
 		"lint": "biome lint .",
 		"lint:fix": "biome lint --write .",
 		"lint:scripts": "shellcheck .github/scripts/*.sh",
