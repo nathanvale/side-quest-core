@@ -5,6 +5,7 @@ coverage/
 
 # Dependencies
 node_modules/
+.npm-changesets/
 # Bun linker artifacts (hoisted mode creates these in project root)
 # See: https://github.com/oven-sh/bun/issues/23615
 *@@@*/
@@ -41,7 +42,7 @@ report.*.json
 # OS
 .DS_Store
 
-# Husky local markers
+# Husky local state (branch protection verified marker)
 .husky/.protection-verified
 
 # Claude Code local memory
@@ -50,7 +51,6 @@ CLAUDE.local.md
 # Test artifacts
 test-results/
 .vitest/
-.artifacts/
 
 #Obsidian vault
 .vault/
