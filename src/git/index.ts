@@ -40,6 +40,43 @@ export async function getGitRoot(): Promise<string | null> {
 }
 
 /**
+ * Get the main (primary) worktree root directory.
+ *
+ * Why: `getGitRoot()` uses `--show-toplevel` which returns the current worktree's
+ * root -- wrong for linked worktrees. `--git-common-dir` always returns the path
+ * to the shared `.git` directory, which lets us derive the main worktree root.
+ *
+ * From main worktree: `--git-common-dir` returns `.git` (relative)
+ * From linked worktree: `--git-common-dir` returns absolute path like `/path/to/repo/.git`
+ * Both resolve correctly via `resolve(cwd, result, '..')`
+ *
+ * @param cwd - Directory to check from (must be inside a git repo)
+ * @returns The absolute path to the main worktree root, or null if not in a git repo
+ *
+ * @example
+ * ```ts
+ * // From main worktree at /Users/me/project
+ * await getMainWorktreeRoot('/Users/me/project') // '/Users/me/project'
+ *
+ * // From linked worktree at /Users/me/project/.worktrees/feat-branch
+ * await getMainWorktreeRoot('/Users/me/project/.worktrees/feat-branch') // '/Users/me/project'
+ * ```
+ */
+export async function getMainWorktreeRoot(cwd: string): Promise<string | null> {
+	const { stdout, exitCode } = await spawnAndCollect(
+		['git', 'rev-parse', '--git-common-dir'],
+		{ cwd },
+	)
+
+	if (exitCode !== 0) return null
+
+	const commonDir = stdout.trim()
+	if (!commonDir) return null
+
+	return resolve(cwd, commonDir, '..')
+}
+
+/**
  * Check if a file path is inside the current git repository.
  * Returns true for any file inside the repo directory, including untracked files.
  *
