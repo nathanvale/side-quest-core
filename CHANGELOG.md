@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- [#37](https://github.com/nathanvale/side-quest-core/pull/37) [`a2ed337`](https://github.com/nathanvale/side-quest-core/commit/a2ed3374e4a0681c9d2466d6fda980b87d331d16) Thanks [@nathanvale](https://github.com/nathanvale)! - Add `getMainWorktreeRoot()` to the git module for resolving the main worktree root directory, correctly handling both main and linked worktrees.
+
 ## 0.3.1
 
 ### Patch Changes
