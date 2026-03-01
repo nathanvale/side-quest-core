@@ -379,7 +379,7 @@ jobs:
           node -e "const fs=require('node:fs'); const r=JSON.parse(fs.readFileSync('.artifacts/jsdoc-health-report.json','utf8')); console.log('## JSDoc Health'); console.log(''); console.log('- Overall: '+r.overallScore+'/100 ('+r.overallRating+')'); console.log('- Modules: '+r.moduleCount); console.log('- Functions: '+r.functionCount); if (r.tier2) { const tier2Score = r.tier2.score === null ? 'n/a' : r.tier2.score + '/100'; console.log('- Tier 2: '+r.tier2.status+' ('+tier2Score+')'); if (r.tier2.stopReason) console.log('- Tier 2 stop reason: '+r.tier2.stopReason); } if (Array.isArray(r.warnings) && r.warnings.length > 0) { console.log('- Warnings: '+r.warnings.length); }" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload health report
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: jsdoc-health-report
           path: .artifacts/jsdoc-health-report.json
